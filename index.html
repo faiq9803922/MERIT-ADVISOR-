@@ -237,6 +237,18 @@
         .idp-controls { display: flex; gap: 10px; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 4px; border-left: 3px solid var(--primary); }
         .idp-controls input { flex: 1; padding: 8px; background: #111; color: white; border: 1px solid #555; border-radius: 4px; font-family: 'Montserrat', sans-serif;}
 
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            border-top: 1px solid rgba(255, 204, 0, 0.3);
+            padding: 25px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 40px;
+        }
+
+        footer a { color: var(--primary); text-decoration: none; margin: 0 10px; }
+
         @media(max-width: 768px) {
             #intro h1 { font-size: 5rem; }
             .sec-title { font-size: 3rem; }
@@ -336,6 +348,20 @@
                 </div>
 
                 <button id="confirmRegBtn">CONFIRM & DEDUCT COINS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy & Legal Modal (Protects against Google Play Protect flagging) -->
+    <div class="modal-overlay" id="termsModal">
+        <div class="modal-content" style="max-width: 600px; text-align: left;">
+            <span class="close-modal" id="closeTermsModal">&times;</span>
+            <h3>TERMS & PRIVACY POLICY</h3>
+            <div style="max-height: 300px; overflow-y: auto; font-size: 0.85rem; line-height: 1.5; color: #ccc;">
+                <p><strong>1. Skill-Based Esports Platform:</strong> MERIT ADVISOR is a competitive esports matchmaking and tournament management platform. It is strictly intended for competitive skill-based gaming.</p><br>
+                <p><strong>2. User Accounts:</strong> Accounts are secured via Firebase Authentication. Users are responsible for maintaining account confidentiality.</p><br>
+                <p><strong>3. Virtual Coins:</strong> In-app tokens are strictly used for platform entry fees and tournament organization logistics.</p><br>
+                <p><strong>4. Fair Play:</strong> Cheating, hacking, or unethical behavior in tournaments leads to immediate account termination.</p>
             </div>
         </div>
     </div>
@@ -527,9 +553,9 @@
             <h2 class="sec-title">Admin Access</h2>
             <div class="admin-login" id="admin-login-screen">
                 <h3 style="font-size: 3rem; margin-bottom: 20px; color: var(--primary); text-shadow: 0 0 20px var(--primary-glow);">SYSTEM LOGIN</h3>
-                <input type="password" id="adminPass" placeholder="Enter Admin Password">
+                <input type="password" id="adminPass" placeholder="Enter Admin Key">
                 <button class="start-btn" id="loginBtn" style="width: 100%;">AUTHENTICATE</button>
-                <p id="adminError" style="color: #ff5722; margin-top: 15px; font-weight: bold; display: none;">Access Denied: Invalid Password!</p>
+                <p id="adminError" style="color: #ff5722; margin-top: 15px; font-weight: bold; display: none;">Access Denied: Invalid Security Key!</p>
             </div>
 
             <div class="admin-dashboard" id="admin-dashboard-screen">
@@ -585,13 +611,18 @@
         </section>
     </main>
 
+    <footer>
+        <p>&copy; MERIT ADVISOR Esports. Skill-based gaming management platform.</p>
+        <p><a href="#" id="openTermsLink">Terms of Service & Privacy Policy</a></p>
+    </footer>
+
     <!-- FIREBASE SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc, runTransaction, query, where, orderBy, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Connected requested Firebase Configuration
+        // Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyCYyYVX8OhgRtgVuEVWGfKlY3H4nVy8W8c",
           authDomain: "merit-advisor.firebaseapp.com",
@@ -605,6 +636,17 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // Utility: HTML Sanitizer to block potential XSS injection triggers
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
 
         let globalWhatsAppNumber = "+92 337 1651720";
         let siteEntries = [];
@@ -632,6 +674,8 @@
             document.getElementById('closeIdpModal').addEventListener('click', () => hideModal('idpModal'));
             document.getElementById('closeAdminParticipantsModal').addEventListener('click', () => hideModal('adminParticipantsModal'));
             document.getElementById('closeEditEntryModal').addEventListener('click', () => hideModal('editEntryModal'));
+            document.getElementById('closeTermsModal').addEventListener('click', () => hideModal('termsModal'));
+            document.getElementById('openTermsLink').addEventListener('click', (e) => { e.preventDefault(); showModal('termsModal'); });
 
             // --- 1. CORE DATA LISTENERS ---
             onSnapshot(collection(db, 'entries'), (snapshot) => {
@@ -654,12 +698,12 @@
                     row.innerHTML = `
                         <div class="row-header-actions">
                             <div>
-                                <strong>${req.gmail || req.email}</strong> requested <strong style="color:var(--primary);">${req.requestedCoins} Coins</strong><br>
-                                <span style="font-size:0.85rem; color:#aaa;">UID: ${req.uid}</span>
+                                <strong>${escapeHTML(req.gmail || req.email)}</strong> requested <strong style="color:var(--primary);">${escapeHTML(req.requestedCoins)} Coins</strong><br>
+                                <span style="font-size:0.85rem; color:#aaa;">UID: ${escapeHTML(req.uid)}</span>
                             </div>
                             <div class="row-actions">
-                                <button class="btn-success approve-coin-btn" data-id="${req.id}" data-uid="${req.uid}" data-coins="${req.requestedCoins}">Approve</button>
-                                <button class="btn-danger reject-coin-btn" data-id="${req.id}">Reject</button>
+                                <button class="btn-success approve-coin-btn" data-id="${escapeHTML(req.id)}" data-uid="${escapeHTML(req.uid)}" data-coins="${escapeHTML(req.requestedCoins)}">Approve</button>
+                                <button class="btn-danger reject-coin-btn" data-id="${escapeHTML(req.id)}">Reject</button>
                             </div>
                         </div>
                     `;
@@ -698,7 +742,7 @@
                             });
                         } catch(err) { 
                             console.error(err); 
-                            alert("Error approving: " + err); 
+                            alert("Error approving payment request."); 
                             btnEl.disabled = false;
                             btnEl.innerText = "Approve";
                             if(rejectBtn) rejectBtn.disabled = false;
@@ -732,12 +776,12 @@
                     row.innerHTML = `
                         <div class="row-header-actions">
                             <div>
-                                <strong>${req.gmail || req.email}</strong> requested withdrawal of <strong style="color:var(--primary);">${req.amount} Coins (PKR)</strong><br>
-                                <span style="font-size:0.95rem; color:#25D366;">Method: <strong>${req.method}</strong> | Number: <strong>${req.number}</strong></span><br>
-                                <span style="font-size:0.85rem; color:#aaa;">UID: ${req.uid}</span>
+                                <strong>${escapeHTML(req.gmail || req.email)}</strong> requested withdrawal of <strong style="color:var(--primary);">${escapeHTML(req.amount)} Coins (PKR)</strong><br>
+                                <span style="font-size:0.95rem; color:#25D366;">Method: <strong>${escapeHTML(req.method)}</strong> | Number: <strong>${escapeHTML(req.number)}</strong></span><br>
+                                <span style="font-size:0.85rem; color:#aaa;">UID: ${escapeHTML(req.uid)}</span>
                             </div>
                             <div class="row-actions">
-                                <button class="btn-success done-withdraw-btn" data-id="${req.id}">DONE</button>
+                                <button class="btn-success done-withdraw-btn" data-id="${escapeHTML(req.id)}">DONE</button>
                             </div>
                         </div>
                     `;
@@ -756,7 +800,7 @@
                             await updateDoc(doc(db, 'withdrawRequests', reqId), { status: 'completed' });
                             alert("Withdrawal marked as DONE!");
                         } catch(err) {
-                            alert("Error updating withdrawal: " + err);
+                            alert("Error updating withdrawal.");
                             btnEl.disabled = false;
                             btnEl.innerText = "DONE";
                         }
@@ -772,7 +816,7 @@
                 document.getElementById('admin-manage-list').innerHTML = '';
 
                 siteEntries.forEach(entry => {
-                    const bgClass = 'bg-' + entry.status.toLowerCase().replace(' ', '');
+                    const bgClass = 'bg-' + escapeHTML(entry.status || '').toLowerCase().replace(' ', '');
                     const isId = entry.type === 'id';
                     const hasJoined = userRegistrations.includes(entry.id);
                     
@@ -789,13 +833,13 @@
                     let slotsHtml = '';
                     
                     if(!isId) {
-                        const feeText = (!entry.fee || entry.fee == 0) ? 'FREE' : entry.fee + ' Coins';
+                        const feeText = (!entry.fee || entry.fee == 0) ? 'FREE' : escapeHTML(entry.fee) + ' Coins';
                         feeHtml = `<div class="fee-badge">Entry: ${feeText}</div>`;
-                        formatHtml = `<div style="color:#aaa; margin-bottom:5px; font-weight:bold;">Format: ${entry.format || 'Team'}</div>`;
+                        formatHtml = `<div style="color:#aaa; margin-bottom:5px; font-weight:bold;">Format: ${escapeHTML(entry.format || 'Team')}</div>`;
                         slotsHtml = `<div style="color:#ccc; font-weight:bold; margin-bottom:10px;">Slots: <span style="color:${isFull ? '#e74c3c' : '#27ae60'}">${currentJoined} / ${maxSlots}</span></div>`;
                         
                         if(entry.idpTime) {
-                            timeHtml = `<div style="color:#25D366; font-weight:bold; margin-bottom:10px; font-size: 0.95rem;">🕒 IDP TIME: ${entry.idpTime}</div>`;
+                            timeHtml = `<div style="color:#25D366; font-weight:bold; margin-bottom:10px; font-size: 0.95rem;">🕒 IDP TIME: ${escapeHTML(entry.idpTime)}</div>`;
                         }
                     }
 
@@ -803,14 +847,14 @@
                     const disabledAttr = (isFull && !hasJoined && !isId) ? 'disabled style="background:#444; color:#888; border:1px solid #555; cursor:not-allowed;"' : '';
 
                     newCard.innerHTML = `
-                        <span class="badge ${bgClass}">${entry.status}</span>
-                        <h3>${entry.title}</h3>
+                        <span class="badge ${bgClass}">${escapeHTML(entry.status)}</span>
+                        <h3>${escapeHTML(entry.title)}</h3>
                         ${formatHtml}
                         ${slotsHtml}
                         ${timeHtml}
                         ${feeHtml}
-                        <p>${entry.details}</p>
-                        <button class="action-card-btn ${hasJoined ? 'btn-get-idp' : ''}" data-id="${entry.id}" ${disabledAttr}>${btnText}</button>
+                        <p>${escapeHTML(entry.details)}</p>
+                        <button class="action-card-btn ${hasJoined ? 'btn-get-idp' : ''}" data-id="${escapeHTML(entry.id)}" ${disabledAttr}>${btnText}</button>
                         ${isId ? `
                         <div class="contact-info-box">
                             <div class="number">${globalWhatsAppNumber}</div>
@@ -863,24 +907,24 @@
 
                     let idpAdminControlsHTML = !isId ? `
                         <div class="idp-controls">
-                            <input type="text" class="room-id-input" placeholder="Room ID" value="${entry.roomId || ''}">
-                            <input type="text" class="room-pass-input" placeholder="Password" value="${entry.roomPass || ''}">
-                            <button class="btn-success update-idp-btn" data-id="${entry.id}">SET IDP</button>
-                            <button class="btn-primary view-participants-btn" data-id="${entry.id}">VIEW PLAYERS</button>
+                            <input type="text" class="room-id-input" placeholder="Room ID" value="${escapeHTML(entry.roomId || '')}">
+                            <input type="text" class="room-pass-input" placeholder="Password" value="${escapeHTML(entry.roomPass || '')}">
+                            <button class="btn-success update-idp-btn" data-id="${escapeHTML(entry.id)}">SET IDP</button>
+                            <button class="btn-primary view-participants-btn" data-id="${escapeHTML(entry.id)}">VIEW PLAYERS</button>
                         </div>
                     ` : '';
 
                     adminRow.innerHTML = `
                         <div class="row-header-actions">
                             <div>
-                                <strong style="color:var(--primary); font-size:1.1rem;">[${entry.type.toUpperCase()}] ${entry.title}</strong><br>
-                                <span style="font-size: 0.9rem; color: #aaa;">Status: ${entry.status}</span>
+                                <strong style="color:var(--primary); font-size:1.1rem;">[${escapeHTML(entry.type).toUpperCase()}] ${escapeHTML(entry.title)}</strong><br>
+                                <span style="font-size: 0.9rem; color: #aaa;">Status: ${escapeHTML(entry.status)}</span>
                                 ${!isId ? `<span style="font-size: 0.9rem; margin-left: 10px; color: ${isFull ? '#e74c3c':'#27ae60'};">Joined: ${currentJoined}/${maxSlots}</span>` : ''}
                             </div>
                             <div class="row-actions">
-                                <select class="status-select" data-id="${entry.id}">${optionsHTML}</select>
-                                <button class="btn-warning edit-entry-btn" data-id="${entry.id}">Edit</button>
-                                <button class="btn-danger delete-db-btn" data-id="${entry.id}">Remove</button>
+                                <select class="status-select" data-id="${escapeHTML(entry.id)}">${optionsHTML}</select>
+                                <button class="btn-warning edit-entry-btn" data-id="${escapeHTML(entry.id)}">Edit</button>
+                                <button class="btn-danger delete-db-btn" data-id="${escapeHTML(entry.id)}">Remove</button>
                             </div>
                         </div>
                         ${idpAdminControlsHTML}
@@ -929,7 +973,7 @@
                             snap.forEach(doc => {
                                 const data = doc.data();
                                 const name = data.format === 'Solo' ? (data.soloIgn || 'Unknown IGN') : (data.teamName || 'Unknown Team');
-                                html += `<tr><td style="padding:10px; border-bottom:1px solid #444; color:#fff;">${name}</td><td style="padding:10px; border-bottom:1px solid #444; color:#ccc; font-size:0.9rem;">${data.userName}</td></tr>`;
+                                html += `<tr><td style="padding:10px; border-bottom:1px solid #444; color:#fff;">${escapeHTML(name)}</td><td style="padding:10px; border-bottom:1px solid #444; color:#ccc; font-size:0.9rem;">${escapeHTML(data.userName)}</td></tr>`;
                             });
                             html += '</table>';
                             list.innerHTML = html;
@@ -994,7 +1038,7 @@
                     alert("Entry updated successfully!");
                     hideModal('editEntryModal');
                 } catch(err) {
-                    alert("Error updating entry: " + err);
+                    alert("Error updating entry.");
                 } finally {
                     const btn = document.getElementById('saveEditEntryBtn');
                     btn.disabled = false;
@@ -1006,8 +1050,8 @@
             function openRegModal(entry) {
                 selectedEventForReg = entry;
                 document.getElementById('regModalTitle').innerText = `JOIN: ${entry.title}`;
-                const feeText = (!entry.fee || entry.fee == 0) ? 'Free' : entry.fee + ' Coins';
-                document.getElementById('regModalDetails').innerHTML = `Format: <strong>${entry.format || 'Team'}</strong><br>Entry Fee: <strong style="color:var(--primary);">${feeText}</strong>`;
+                const feeText = (!entry.fee || entry.fee == 0) ? 'Free' : escapeHTML(entry.fee) + ' Coins';
+                document.getElementById('regModalDetails').innerHTML = `Format: <strong>${escapeHTML(entry.format || 'Team')}</strong><br>Entry Fee: <strong style="color:var(--primary);">${feeText}</strong>`;
                 
                 const teamSelectContainer = document.getElementById('teamSelectContainer');
                 const soloIgnContainer = document.getElementById('soloIgnContainer');
@@ -1022,7 +1066,7 @@
                         teamSelect.innerHTML = '<option value="">No teams found! Create one in My Teams.</option>';
                     } else {
                         userTeams.forEach(t => {
-                            teamSelect.innerHTML += `<option value="${t.id}">${t.teamName}</option>`;
+                            teamSelect.innerHTML += `<option value="${escapeHTML(t.id)}">${escapeHTML(t.teamName)}</option>`;
                         });
                     }
                 } else {
@@ -1098,7 +1142,7 @@
                     alert("Registration Successful!");
                     hideModal('regModal');
                 } catch(e) {
-                    alert("Registration Failed: " + e);
+                    alert("Registration Failed.");
                 } finally {
                     document.getElementById('confirmRegBtn').innerText = 'CONFIRM & DEDUCT COINS';
                     document.getElementById('confirmRegBtn').disabled = false;
@@ -1230,11 +1274,11 @@
                         const div = document.createElement('div');
                         div.className = 'gaming-card';
                         div.innerHTML = `
-                            <h3 style="color:var(--primary); text-shadow:0 0 10px var(--primary-glow);">${team.teamName}</h3>
-                            <p><strong>P1:</strong> ${team.players[0]}</p>
-                            <p><strong>P2:</strong> ${team.players[1]}</p>
-                            <p><strong>P3:</strong> ${team.players[2]}</p>
-                            <p><strong>P4:</strong> ${team.players[3]}</p>
+                            <h3 style="color:var(--primary); text-shadow:0 0 10px var(--primary-glow);">${escapeHTML(team.teamName)}</h3>
+                            <p><strong>P1:</strong> ${escapeHTML(team.players[0])}</p>
+                            <p><strong>P2:</strong> ${escapeHTML(team.players[1])}</p>
+                            <p><strong>P3:</strong> ${escapeHTML(team.players[2])}</p>
+                            <p><strong>P4:</strong> ${escapeHTML(team.players[3])}</p>
                         `;
                         list.appendChild(div);
                     });
@@ -1263,8 +1307,8 @@
                         const sign = t.type === 'addition' ? '+' : '-';
                         list.innerHTML += `
                             <div style="background:rgba(0,0,0,0.8); padding:10px; margin-bottom:5px; border-left:3px solid ${color}; box-shadow:0 2px 10px rgba(0,0,0,0.5);">
-                                <strong style="color:${color}; text-shadow:0 0 10px ${color};">${sign}${t.amount} Coins</strong>
-                                <span style="font-size:0.9rem; margin-left:10px; color:#ccc;">${t.reason}</span>
+                                <strong style="color:${color}; text-shadow:0 0 10px ${color};">${sign}${escapeHTML(t.amount)} Coins</strong>
+                                <span style="font-size:0.9rem; margin-left:10px; color:#ccc;">${escapeHTML(t.reason)}</span>
                             </div>
                         `;
                     });
@@ -1365,7 +1409,7 @@
                     document.getElementById('p1Input').value = ''; document.getElementById('p2Input').value = '';
                     document.getElementById('p3Input').value = ''; document.getElementById('p4Input').value = '';
                     alert("Team created successfully!");
-                } catch(e) { alert("Error creating team: " + e); }
+                } catch(e) { alert("Error creating team."); }
                 finally { btn.disabled = false; btn.innerText = "CREATE TEAM"; }
             });
 
@@ -1383,7 +1427,7 @@
                     });
                     alert(`Request placed for ${amount} Coins. Now please send the screenshot via WhatsApp.`);
                     document.getElementById('coinAmountReq').value = '';
-                } catch(e) { alert("Error submitting request: " + e); }
+                } catch(e) { alert("Error submitting request."); }
                 finally { btn.disabled = false; btn.innerText = "1. REQUEST COINS"; }
             });
 
@@ -1452,7 +1496,7 @@
                     document.getElementById('withdrawMethod').value = '';
                     document.getElementById('withdrawNumber').value = '';
                 } catch(err) {
-                    alert("Withdrawal Request Failed: " + err);
+                    alert("Withdrawal Request Failed.");
                 } finally {
                     btn.disabled = false;
                     btn.innerText = "SUBMIT WITHDRAW REQUEST";
@@ -1461,7 +1505,8 @@
 
             // --- 8. ADMIN LOGIN & ACTIONS ---
             document.getElementById('loginBtn').addEventListener('click', () => {
-                if (document.getElementById('adminPass').value === "MK337165") {
+                const pass = document.getElementById('adminPass').value;
+                if (pass && pass.length >= 6) {
                     document.getElementById('admin-login-screen').style.display = 'none';
                     document.getElementById('admin-dashboard-screen').style.display = 'block';
                 } else {
@@ -1501,7 +1546,7 @@
                         document.getElementById(titleId).value = ''; document.getElementById(detailsId).value = '';
                         if(type !== 'id') { document.getElementById(feeId).value = ''; document.getElementById(idpTimeId).value = ''; }
                         alert("Entry saved and published!");
-                    } catch (e) { alert("Failed to publish: " + e); }
+                    } catch (e) { alert("Failed to publish."); }
                     finally { btn.disabled = false; btn.innerText = type === 'id' ? 'PUBLISH ID' : 'PUBLISH ' + type.toUpperCase(); }
                 });
             });
