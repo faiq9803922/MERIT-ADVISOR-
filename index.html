@@ -11,12 +11,12 @@
     <style>
         :root {
             --bg-dark: #000000;
-            --bg-panel: rgba(10, 10, 12, 0.6);
-            --primary: #ff3300;
-            --primary-glow: rgba(255, 51, 0, 0.9);
+            --bg-panel: rgba(15, 15, 15, 0.85);
+            --primary: #ffcc00;
+            --primary-glow: rgba(255, 204, 0, 0.8);
             --text-main: #f0f0f0;
             --text-light: #ffffff;
-            --border-color: rgba(255, 51, 0, 0.5);
+            --border-color: rgba(255, 204, 0, 0.4);
 
             --status-upcoming: #f39c12;
             --status-completed: #27ae60;
@@ -31,9 +31,9 @@
             font-family: 'Montserrat', sans-serif;
             background-color: var(--bg-dark);
             background-image:
-                radial-gradient(circle at 50% 50%, rgba(35, 15, 10, 0.8) 0%, var(--bg-dark) 80%),
-                linear-gradient(rgba(255, 51, 0, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 51, 0, 0.05) 1px, transparent 1px);
+                radial-gradient(circle at 50% 50%, rgba(40, 35, 0, 0.8) 0%, var(--bg-dark) 80%),
+                linear-gradient(rgba(255, 204, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 204, 0, 0.05) 1px, transparent 1px);
             background-size: 100% 100%, 40px 40px, 40px 40px;
             background-attachment: fixed;
             color: var(--text-main);
@@ -71,7 +71,7 @@
 
         #login-animation .spinner {
             width: 80px; height: 80px;
-            border: 6px solid rgba(255, 51, 0, 0.2);
+            border: 6px solid rgba(255, 204, 0, 0.2);
             border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -95,13 +95,13 @@
 
         header {
             position: fixed; top: 0; width: 100%; height: 75px;
-            background: rgba(5, 5, 5, 0.8); backdrop-filter: blur(10px);
+            background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(10px);
             border-bottom: 2px solid var(--primary);
             display: flex; justify-content: space-between; align-items: center;
             padding: 0 5%; z-index: 1000; box-shadow: 0 4px 30px var(--primary-glow);
         }
 
-        .logo { font-size: 2.5rem; color: var(--text-light); text-decoration: none; cursor: pointer; text-shadow: 0 0 15px rgba(255,51,0,0.6); }
+        .logo { font-size: 2.5rem; color: var(--text-light); text-decoration: none; cursor: pointer; text-shadow: 0 0 15px rgba(255, 204, 0, 0.6); }
         .logo span { color: var(--primary); text-shadow: 0 0 15px var(--primary-glow); }
 
         .header-controls { display: flex; align-items: center; gap: 25px; }
@@ -109,8 +109,8 @@
         .coin-display {
             background: rgba(0,0,0,0.8); border: 1px solid var(--primary);
             padding: 5px 15px; border-radius: 20px; font-weight: bold;
-            color: #ffd700; display: flex; align-items: center; gap: 5px;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            color: var(--primary); display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
         }
 
         .profile-icon { font-size: 1.8rem; color: var(--text-light); cursor: pointer; transition: 0.3s; display: none; }
@@ -124,23 +124,23 @@
 
         .sidebar {
             position: fixed; top: 0; right: -320px; width: 320px; height: 100vh;
-            background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(15px);
+            background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px);
             border-left: 2px solid var(--primary); padding-top: 100px;
-            transition: right 0.4s ease-in-out; z-index: 999; box-shadow: -10px 0 40px rgba(255,51,0,0.2);
+            transition: right 0.4s ease-in-out; z-index: 999; box-shadow: -10px 0 40px rgba(255, 204, 0, 0.2);
             overflow-y: auto;
         }
 
         .sidebar.active { right: 0; }
         .sidebar a {
             display: block; padding: 15px 30px; font-size: 1.5rem; color: var(--text-light);
-            text-decoration: none; border-bottom: 1px solid rgba(255, 51, 0, 0.3); transition: 0.3s; cursor: pointer;
+            text-decoration: none; border-bottom: 1px solid rgba(255, 204, 0, 0.3); transition: 0.3s; cursor: pointer;
         }
-        .sidebar a:hover { background: var(--primary); color: #fff; padding-left: 45px; box-shadow: inset 5px 0 0px #fff; text-shadow: 0 0 10px #fff; }
+        .sidebar a:hover { background: var(--primary); color: #000; font-weight: bold; padding-left: 45px; box-shadow: inset 5px 0 0px #000; }
 
         .page-section { display: none; padding: 120px 5% 50px 5%; min-height: 100vh; opacity: 0; transition: opacity 0.4s ease-out; }
         .page-section.active { display: block; opacity: 1; }
 
-        .sec-title { font-size: 4rem; color: var(--text-light); border-left: 6px solid var(--primary); padding-left: 20px; margin-bottom: 50px; text-shadow: 0 5px 15px rgba(255,51,0,0.5); }
+        .sec-title { font-size: 4rem; color: var(--text-light); border-left: 6px solid var(--primary); padding-left: 20px; margin-bottom: 50px; text-shadow: 0 5px 15px rgba(255, 204, 0, 0.5); }
 
         #intro { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; height: 100vh; padding: 0 20px; }
         #intro h1 { font-size: 7.5rem; line-height: 1; text-shadow: 0 0 40px var(--primary-glow); margin-bottom: 15px; }
@@ -148,11 +148,11 @@
 
         .start-btn {
             display: inline-block; padding: 15px 50px; font-size: 2rem; background: var(--primary);
-            color: white; border: none; cursor: pointer; text-decoration: none;
-            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(255,51,0,0.4);
+            color: #000; font-weight: bold; border: none; cursor: pointer; text-decoration: none;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(255, 204, 0, 0.4);
         }
-        .start-btn:hover:not(:disabled) { transform: scale(1.05); background: #ff5533; box-shadow: 0 0 40px var(--primary-glow); }
-        .start-btn:disabled { opacity: 0.6; cursor: not-allowed; background: #555; box-shadow: none; }
+        .start-btn:hover:not(:disabled) { transform: scale(1.05); background: #ffe066; box-shadow: 0 0 40px var(--primary-glow); }
+        .start-btn:disabled { opacity: 0.6; cursor: not-allowed; background: #555; color: #888; box-shadow: none; }
 
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
 
@@ -164,7 +164,7 @@
         .gaming-card:hover { border-color: var(--primary); box-shadow: 0 15px 45px var(--primary-glow); transform: translateY(-8px); }
         .gaming-card h3 { font-size: 2.2rem; color: white; margin-bottom: 12px; text-shadow: 0 2px 10px rgba(255,255,255,0.2); }
         .gaming-card p { font-size: 1.1rem; line-height: 1.6; white-space: pre-wrap; margin-bottom: 10px; flex-grow: 1; }
-        .fee-badge { color: #ffd700; font-weight: bold; margin-bottom: 15px; background: rgba(255, 215, 0, 0.15); padding: 5px 10px; border-radius: 4px; display: inline-block; box-shadow: 0 0 10px rgba(255,215,0,0.2); }
+        .fee-badge { color: var(--primary); font-weight: bold; margin-bottom: 15px; background: rgba(255, 204, 0, 0.15); padding: 5px 10px; border-radius: 4px; display: inline-block; box-shadow: 0 0 10px rgba(255, 204, 0, 0.2); }
 
         .badge { color: white; padding: 6px 14px; font-size: 0.9rem; font-weight: 700; border-radius: 4px; display: inline-block; margin-bottom: 15px; font-family: 'Montserrat', sans-serif; align-self: flex-start; text-transform: uppercase; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .bg-upcoming { background: var(--status-upcoming); }
@@ -175,15 +175,15 @@
         .bg-sold { background: var(--status-ended); }
 
         .action-card-btn {
-            background: var(--primary); color: white; border: none; padding: 12px; font-size: 1.3rem;
+            background: var(--primary); color: #000; font-weight: bold; border: none; padding: 12px; font-size: 1.3rem;
             font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; cursor: pointer; margin-top: auto;
             border-radius: 4px; transition: 0.3s; text-transform: uppercase; width: 100%;
-            box-shadow: 0 5px 15px rgba(255,51,0,0.3);
+            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.3);
         }
-        .action-card-btn:hover:not(:disabled) { background: #ff5533; box-shadow: 0 0 25px var(--primary-glow); }
+        .action-card-btn:hover:not(:disabled) { background: #ffe066; box-shadow: 0 0 25px var(--primary-glow); }
         .action-card-btn:disabled { background: #444; color: #888; cursor: not-allowed; box-shadow: none; border: 1px solid #555; }
         
-        .btn-get-idp { background: #25D366 !important; box-shadow: 0 5px 15px rgba(37,211,102,0.3) !important; }
+        .btn-get-idp { background: #25D366 !important; color: #fff !important; box-shadow: 0 5px 15px rgba(37,211,102,0.3) !important; }
         .btn-get-idp:hover { background: #1ebe57 !important; box-shadow: 0 0 25px rgba(37, 211, 102, 0.8) !important; }
 
         .contact-info-box { display: none; margin-top: 15px; padding: 15px; background: rgba(0, 0, 0, 0.8); border-left: 3px solid #25D366; border-radius: 5px; text-align: center; animation: fadeIn 0.3s ease-in-out; }
@@ -193,34 +193,33 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .user-auth-box { max-width: 480px; margin: 0 auto; background: var(--bg-panel); backdrop-filter: blur(20px); padding: 40px; border: 1px solid var(--primary); border-radius: 10px; box-shadow: 0 10px 50px rgba(255,51,0,0.3); text-align: center; }
-        .google-btn-container { display: flex; justify-content: center; margin-top: 20px; }
+        .user-auth-box { max-width: 480px; margin: 0 auto; background: var(--bg-panel); backdrop-filter: blur(20px); padding: 40px; border: 1px solid var(--primary); border-radius: 10px; box-shadow: 0 10px 50px rgba(255, 204, 0, 0.3); text-align: center; }
 
-        .user-profile-card { text-align: center; background: var(--bg-panel); backdrop-filter: blur(20px); padding: 40px; border: 1px solid var(--primary); border-radius: 10px; max-width: 500px; margin: 40px auto; box-shadow: 0 10px 50px rgba(255,51,0,0.3); }
+        .user-profile-card { text-align: center; background: var(--bg-panel); backdrop-filter: blur(20px); padding: 40px; border: 1px solid var(--primary); border-radius: 10px; max-width: 500px; margin: 40px auto; box-shadow: 0 10px 50px rgba(255, 204, 0, 0.3); }
         .profile-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 15px; box-shadow: 0 0 25px var(--primary-glow); }
 
         .custom-form-box { background: var(--bg-panel); backdrop-filter: blur(15px); padding: 25px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.8); }
         .custom-form-box input, .custom-form-box textarea, .custom-form-box select { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0,0,0,0.8); border: 1px solid #444; color: white; font-size: 1rem; font-family: 'Montserrat', sans-serif; border-radius: 4px; transition: 0.3s; }
         .custom-form-box input:focus, .custom-form-box textarea:focus, .custom-form-box select:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); outline: none; }
-        .custom-form-box button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; font-size: 1.2rem; border-radius: 4px; transition: 0.3s; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
-        .custom-form-box button:hover:not(:disabled) { background: #ff5533; box-shadow: 0 0 25px var(--primary-glow); }
+        .custom-form-box button { width: 100%; padding: 12px; background: var(--primary); color: #000; border: none; cursor: pointer; font-weight: bold; font-size: 1.2rem; border-radius: 4px; transition: 0.3s; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+        .custom-form-box button:hover:not(:disabled) { background: #ffe066; box-shadow: 0 0 25px var(--primary-glow); }
         .custom-form-box button:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(12px); z-index: 2000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
-        .modal-content { background: var(--bg-panel); padding: 30px; border: 2px solid var(--primary); border-radius: 10px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 15px 50px rgba(255, 51, 0, 0.6); transform: scale(0.9); transition: transform 0.3s ease; }
+        .modal-content { background: var(--bg-panel); padding: 30px; border: 2px solid var(--primary); border-radius: 10px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 15px 50px rgba(255, 204, 0, 0.5); transform: scale(0.9); transition: transform 0.3s ease; }
         .modal-overlay.active { display: flex; opacity: 1; }
         .modal-overlay.active .modal-content { transform: scale(1); }
         .modal-content h3 { font-size: 2.5rem; color: var(--primary); margin-bottom: 20px; font-family: 'Bebas Neue', sans-serif; text-shadow: 0 0 15px var(--primary-glow); }
         .close-modal { position: absolute; top: 15px; right: 20px; font-size: 2rem; color: #888; cursor: pointer; transition: 0.3s; }
         .close-modal:hover { color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); }
 
-        .admin-login { max-width: 450px; margin: 80px auto; text-align: center; background: var(--bg-panel); padding: 40px; border: 1px solid var(--primary); border-radius: 10px; box-shadow: 0 10px 40px rgba(255,51,0,0.3); }
+        .admin-login { max-width: 450px; margin: 80px auto; text-align: center; background: var(--bg-panel); padding: 40px; border: 1px solid var(--primary); border-radius: 10px; box-shadow: 0 10px 40px rgba(255, 204, 0, 0.3); }
         .admin-login input { width: 100%; padding: 15px; background: rgba(0,0,0,0.8); border: 1px solid var(--border-color); color: white; margin-bottom: 20px; font-size: 1.2rem; border-radius: 5px; }
         .admin-dashboard { display: none; }
         .admin-panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 50px; }
         .admin-management-container { background: var(--bg-panel); padding: 30px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .list-item-row { background: rgba(0,0,0,0.8); padding: 15px 20px; border: 1px solid #444; border-radius: 5px; display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .list-item-row:hover { border-color: var(--primary); box-shadow: 0 0 20px rgba(255,51,0,0.4); }
+        .list-item-row:hover { border-color: var(--primary); box-shadow: 0 0 20px rgba(255, 204, 0, 0.4); }
         .row-header-actions { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; width: 100%; }
         .row-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .row-actions select { padding: 8px 12px; background: #222; color: white; border: 1px solid #555; border-radius: 4px; }
@@ -288,22 +287,22 @@
             <h3 id="editModalTitle">EDIT PUBLISHED ENTRY</h3>
             <div class="custom-form-box" style="border:none; padding:0; box-shadow:none;">
                 <input type="hidden" id="editEntryId">
-                <label style="color:#primary; display:block; margin-bottom:5px; font-weight:bold;">Title:</label>
+                <label style="color:var(--primary); display:block; margin-bottom:5px; font-weight:bold;">Title:</label>
                 <input type="text" id="editTitle">
-                <label style="color:#primary; display:block; margin-bottom:5px; font-weight:bold;">Details:</label>
+                <label style="color:var(--primary); display:block; margin-bottom:5px; font-weight:bold;">Details:</label>
                 <textarea id="editDetails" rows="4"></textarea>
                 <div id="editNonIdFields">
-                    <label style="color:#primary; display:block; margin-bottom:5px; font-weight:bold;">Format:</label>
+                    <label style="color:var(--primary); display:block; margin-bottom:5px; font-weight:bold;">Format:</label>
                     <select id="editFormat">
                         <option value="Team">Format: Team (12 Slots)</option>
                         <option value="Solo">Format: Solo (48 Slots)</option>
                     </select>
-                    <label style="color:#primary; display:block; margin-bottom:5px; font-weight:bold;">Entry Fee (Coins):</label>
+                    <label style="color:var(--primary); display:block; margin-bottom:5px; font-weight:bold;">Entry Fee (Coins):</label>
                     <input type="number" id="editFee">
-                    <label style="color:#primary; display:block; margin-bottom:5px; font-weight:bold;">IDP Time:</label>
+                    <label style="color:var(--primary); display:block; margin-bottom:5px; font-weight:bold;">IDP Time:</label>
                     <input type="text" id="editIdpTime">
                 </div>
-                <label style="color:#primary; display:block; margin-bottom:5px; font-weight:bold;">Status:</label>
+                <label style="color:var(--primary); display:block; margin-bottom:5px; font-weight:bold;">Status:</label>
                 <select id="editStatus">
                     <option value="Upcoming">Upcoming</option>
                     <option value="On Going">On Going</option>
@@ -346,11 +345,11 @@
         <div class="modal-content" style="text-align: center;">
             <span class="close-modal" id="closeIdpModal">&times;</span>
             <h3 style="color: #25D366; font-size: 3rem; text-shadow: 0 0 20px rgba(37,211,102,0.6);">ROOM DETAILS</h3>
-            <div style="background: rgba(0,0,0,0.8); padding: 20px; border: 1px solid var(--primary); border-radius: 5px; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(255,51,0,0.2);">
-                <p style="font-size: 1.3rem; color: #fff;"><strong>Room ID:</strong> <br><span id="displayRoomId" style="color: #ffd700; font-size: 1.8rem; font-weight: bold; display:inline-block; margin-top:5px; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></span></p>
+            <div style="background: rgba(0,0,0,0.8); padding: 20px; border: 1px solid var(--primary); border-radius: 5px; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(255,204,0,0.2);">
+                <p style="font-size: 1.3rem; color: #fff;"><strong>Room ID:</strong> <br><span id="displayRoomId" style="color: var(--primary); font-size: 1.8rem; font-weight: bold; display:inline-block; margin-top:5px; text-shadow: 0 0 10px rgba(255,204,0,0.5);"></span></p>
             </div>
-            <div style="background: rgba(0,0,0,0.8); padding: 20px; border: 1px solid var(--primary); border-radius: 5px; box-shadow: inset 0 0 10px rgba(255,51,0,0.2);">
-                <p style="font-size: 1.3rem; color: #fff;"><strong>Password:</strong> <br><span id="displayRoomPass" style="color: #ffd700; font-size: 1.8rem; font-weight: bold; display:inline-block; margin-top:5px; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></span></p>
+            <div style="background: rgba(0,0,0,0.8); padding: 20px; border: 1px solid var(--primary); border-radius: 5px; box-shadow: inset 0 0 10px rgba(255,204,0,0.2);">
+                <p style="font-size: 1.3rem; color: #fff;"><strong>Password:</strong> <br><span id="displayRoomPass" style="color: var(--primary); font-size: 1.8rem; font-weight: bold; display:inline-block; margin-top:5px; text-shadow: 0 0 10px rgba(255,204,0,0.5);"></span></p>
             </div>
             <p style="color: #aaa; font-size: 0.9rem; margin-top: 15px;">Do not share this ID & Password with unregistered players.</p>
         </div>
@@ -383,14 +382,19 @@
         <section id="user-auth" class="page-section">
             <div class="auth-header" style="text-align: center; margin-bottom: 30px;">
                 <h1 style="font-size: 5rem; text-shadow: 0 0 30px var(--primary-glow); font-family: 'Bebas Neue', sans-serif;">MERIT <span style="color: var(--primary);">ADVISOR</span></h1>
-                <p style="color: #ccc; font-size: 1.2rem; margin-top: 10px;">Sign in with Google to access the platform.</p>
+                <p style="color: #ccc; font-size: 1.2rem; margin-top: 10px;">Sign in with Email & Password to access the platform.</p>
             </div>
             <div class="user-auth-box" id="authBox">
-                <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 1px; margin-bottom: 20px;">PLAYER LOGIN</h2>
-                <div class="google-btn-container">
-                    <button id="googleSignInBtn" class="start-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <i class="fa-brands fa-google"></i> SIGN IN
-                    </button>
+                <h2 id="authTitle" style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 1px; margin-bottom: 20px; color: var(--primary);">PLAYER LOGIN</h2>
+                <div class="custom-form-box" style="border:none; padding:0; box-shadow:none;">
+                    <input type="text" id="authDisplayName" placeholder="Full Name / Gamer Tag" style="display:none;">
+                    <input type="email" id="authEmail" placeholder="Email Address">
+                    <input type="password" id="authPassword" placeholder="Password">
+                    
+                    <button id="emailSignInBtn" class="start-btn" style="width: 100%; margin-bottom: 12px; font-size: 1.5rem;">SIGN IN</button>
+                    <button id="emailSignUpBtn" class="start-btn" style="width: 100%; display:none; margin-bottom: 12px; font-size: 1.5rem;">REGISTER</button>
+                    
+                    <p id="authToggleMsg" style="color:#aaa; font-size:0.95rem; margin-top:15px; cursor:pointer; text-decoration: underline;">Need an account? Switch to Registration</p>
                 </div>
             </div>
             <div class="user-profile-card" id="userProfileCard" style="display: none;">
@@ -398,7 +402,7 @@
                 <h3>PLAYER PROFILE</h3>
                 <p><strong>Name:</strong> <span id="profileName">-</span></p>
                 <p><strong>Email:</strong> <span id="profileEmailCard">-</span></p>
-                <button class="start-btn" id="userLogoutBtn" style="margin-top: 25px; background: #c0392b; box-shadow: 0 10px 30px rgba(192,57,43,0.4);">LOGOUT</button>
+                <button class="start-btn" id="userLogoutBtn" style="margin-top: 25px; background: #c0392b; color: #fff; box-shadow: 0 10px 30px rgba(192,57,43,0.4);">LOGOUT</button>
             </div>
         </section>
 
@@ -444,7 +448,7 @@
             <div style="display:flex; flex-wrap:wrap; gap:30px;">
                 <!-- Deposit Box -->
                 <div class="custom-form-box" style="flex: 1; min-width:300px; text-align:center;">
-                    <h3 style="font-size:3rem; color:#ffd700; margin-bottom:10px; text-shadow: 0 0 15px rgba(255,215,0,0.4);">🪙 <span id="mainWalletBalance">0</span> Coins</h3>
+                    <h3 style="font-size:3rem; color:var(--primary); margin-bottom:10px; text-shadow: 0 0 15px rgba(255,204,0,0.4);">🪙 <span id="mainWalletBalance">0</span> Coins</h3>
                     <p style="color:#ccc; margin-bottom:20px;">1 Coin = 1 PKR</p>
                     
                     <div style="background:rgba(0,0,0,0.8); padding:15px; border-left:4px solid #27ae60; margin-bottom:20px; text-align:left; box-shadow: inset 0 0 10px rgba(39,174,96,0.2);">
@@ -457,10 +461,10 @@
                     <input type="number" id="coinAmountReq" placeholder="Enter coins to buy (e.g., 50)" min="1">
                     <button id="requestCoinsBtn" style="margin-bottom:15px;">1. REQUEST COINS</button>
                     
-                    <a href="https://wa.me/03371657120" target="_blank" class="start-btn" style="width:100%; background:#25D366; box-shadow: 0 5px 20px rgba(37,211,102,0.4); font-size:1.2rem; text-align:center; padding:12px;">
+                    <a href="https://wa.me/923371651720" target="_blank" class="start-btn" style="width:100%; background:#25D366; color:#fff; box-shadow: 0 5px 20px rgba(37,211,102,0.4); font-size:1.2rem; text-align:center; padding:12px;">
                         <i class="fa-brands fa-whatsapp"></i> 2. SEND SCREENSHOT ON WHATSAPP
                     </a>
-                    <p style="font-size:0.85rem; color:#888; margin-top:10px;">Send screenshot + Your Gmail + Requested Coins to WhatsApp to get approved.</p>
+                    <p style="font-size:0.85rem; color:#888; margin-top:10px;">Send screenshot + Your Email + Requested Coins to WhatsApp to get approved.</p>
                 </div>
 
                 <!-- Withdraw Box -->
@@ -481,7 +485,7 @@
                     <label style="display:block; color:#aaa; margin-bottom:5px;">Account Number:</label>
                     <input type="text" id="withdrawNumber" placeholder="e.g. 03001234567">
 
-                    <button id="requestWithdrawBtn" style="background:#27ae60;">SUBMIT WITHDRAW REQUEST</button>
+                    <button id="requestWithdrawBtn" style="background:#27ae60; color:#fff;">SUBMIT WITHDRAW REQUEST</button>
                 </div>
                 
                 <!-- History Box -->
@@ -510,9 +514,9 @@
                     Have any questions regarding tournament registrations, scrims, wallet withdrawals, or account IDs? Contact our official support team directly on WhatsApp.
                 </p>
                 <div style="background: rgba(0,0,0,0.8); padding: 15px; border-left: 4px solid #25D366; border-radius: 5px; margin-bottom: 25px;">
-                    <p style="font-size: 1.5rem; color: #fff; font-weight: bold; letter-spacing: 1px;">03371657120</p>
+                    <p style="font-size: 1.5rem; color: #fff; font-weight: bold; letter-spacing: 1px;">+92 337 1651720</p>
                 </div>
-                <a href="https://wa.me/03371657120" target="_blank" class="start-btn" style="background: #25D366; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; box-shadow: 0 5px 20px rgba(37,211,102,0.4);">
+                <a href="https://wa.me/923371651720" target="_blank" class="start-btn" style="background: #25D366; color:#fff; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; box-shadow: 0 5px 20px rgba(37,211,102,0.4);">
                     <i class="fa-brands fa-whatsapp"></i> CHAT ON WHATSAPP
                 </a>
             </div>
@@ -584,25 +588,25 @@
     <!-- FIREBASE SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc, runTransaction, query, where, orderBy, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+        // Connected requested Firebase Configuration
         const firebaseConfig = {
-          apiKey: "AIzaSyCtKY5fH-XYXXeTOn9WpuFvrs73doplduQ",
-          authDomain: "ashes-of-war-d3b67.firebaseapp.com",
-          projectId: "ashes-of-war-d3b67",
-          storageBucket: "ashes-of-war-d3b67.firebasestorage.app",
-          messagingSenderId: "89015767468",
-          appId: "1:89015767468:web:f622df42435ddc7110aa09",
-          measurementId: "G-Q98WLK7191"
+          apiKey: "AIzaSyCYyYVX8OhgRtgVuEVWGfKlY3H4nVy8W8c",
+          authDomain: "merit-advisor.firebaseapp.com",
+          projectId: "merit-advisor",
+          storageBucket: "merit-advisor.firebasestorage.app",
+          messagingSenderId: "341164696474",
+          appId: "1:341164696474:web:60d15ea537cd4508389023",
+          measurementId: "G-QNHLVL5J9B"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
         const db = getFirestore(app);
 
-        let globalWhatsAppNumber = "03371657120";
+        let globalWhatsAppNumber = "+92 337 1651720";
         let siteEntries = [];
         let userTeams = [];
         let userRegistrations = []; 
@@ -650,7 +654,7 @@
                     row.innerHTML = `
                         <div class="row-header-actions">
                             <div>
-                                <strong>${req.gmail}</strong> requested <strong style="color:#ffd700;">${req.requestedCoins} Coins</strong><br>
+                                <strong>${req.gmail || req.email}</strong> requested <strong style="color:var(--primary);">${req.requestedCoins} Coins</strong><br>
                                 <span style="font-size:0.85rem; color:#aaa;">UID: ${req.uid}</span>
                             </div>
                             <div class="row-actions">
@@ -728,7 +732,7 @@
                     row.innerHTML = `
                         <div class="row-header-actions">
                             <div>
-                                <strong>${req.gmail}</strong> requested withdrawal of <strong style="color:#ffd700;">${req.amount} Coins (PKR)</strong><br>
+                                <strong>${req.gmail || req.email}</strong> requested withdrawal of <strong style="color:var(--primary);">${req.amount} Coins (PKR)</strong><br>
                                 <span style="font-size:0.95rem; color:#25D366;">Method: <strong>${req.method}</strong> | Number: <strong>${req.number}</strong></span><br>
                                 <span style="font-size:0.85rem; color:#aaa;">UID: ${req.uid}</span>
                             </div>
@@ -810,7 +814,7 @@
                         ${isId ? `
                         <div class="contact-info-box">
                             <div class="number">${globalWhatsAppNumber}</div>
-                            <a href="https://wa.me/${globalWhatsAppNumber}" target="_blank" class="wa-btn">
+                            <a href="https://wa.me/923371651720" target="_blank" class="wa-btn">
                                 <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
                             </a>
                         </div>` : ''}
@@ -882,17 +886,14 @@
                         ${idpAdminControlsHTML}
                     `;
 
-                    // Quick Status Update
                     adminRow.querySelector('.status-select').addEventListener('change', async (e) => {
                         await updateDoc(doc(db, 'entries', e.target.getAttribute('data-id')), { status: e.target.value });
                     });
                     
-                    // Delete Entry
                     adminRow.querySelector('.delete-db-btn').addEventListener('click', async (e) => {
                         if (confirm('Permanently delete this entry?')) await deleteDoc(doc(db, 'entries', e.target.getAttribute('data-id')));
                     });
 
-                    // Edit Entry Modal Opener (preserves joined teams)
                     adminRow.querySelector('.edit-entry-btn').addEventListener('click', () => {
                         document.getElementById('editEntryId').value = entry.id;
                         document.getElementById('editTitle').value = entry.title || '';
@@ -911,7 +912,6 @@
                         showModal('editEntryModal');
                     });
 
-                    // Admin View Participants
                     adminRow.querySelector('.view-participants-btn')?.addEventListener('click', async (e) => {
                         const eventId = e.target.getAttribute('data-id');
                         document.getElementById('adminPartTitle').innerText = `PLAYERS [${entry.title}]`;
@@ -939,7 +939,6 @@
                         }
                     });
 
-                    // Admin IDP Update Action
                     if(!isId) {
                         adminRow.querySelector('.update-idp-btn').addEventListener('click', async (e) => {
                             const btn = e.target;
@@ -963,7 +962,6 @@
                 });
             }
 
-            // Save Edits to Scrims / Tournaments
             document.getElementById('saveEditEntryBtn').addEventListener('click', async () => {
                 const entryId = document.getElementById('editEntryId').value;
                 const title = document.getElementById('editTitle').value.trim();
@@ -992,9 +990,8 @@
                     btn.disabled = true;
                     btn.innerText = "SAVING...";
 
-                    // Updating using updateDoc preserves joinedCount and existing registrations completely!
                     await updateDoc(doc(db, 'entries', entryId), updateData);
-                    alert("Entry updated successfully! All joined teams/players remain intact.");
+                    alert("Entry updated successfully!");
                     hideModal('editEntryModal');
                 } catch(err) {
                     alert("Error updating entry: " + err);
@@ -1010,7 +1007,7 @@
                 selectedEventForReg = entry;
                 document.getElementById('regModalTitle').innerText = `JOIN: ${entry.title}`;
                 const feeText = (!entry.fee || entry.fee == 0) ? 'Free' : entry.fee + ' Coins';
-                document.getElementById('regModalDetails').innerHTML = `Format: <strong>${entry.format || 'Team'}</strong><br>Entry Fee: <strong style="color:#ffd700;">${feeText}</strong>`;
+                document.getElementById('regModalDetails').innerHTML = `Format: <strong>${entry.format || 'Team'}</strong><br>Entry Fee: <strong style="color:var(--primary);">${feeText}</strong>`;
                 
                 const teamSelectContainer = document.getElementById('teamSelectContainer');
                 const soloIgnContainer = document.getElementById('soloIgnContainer');
@@ -1131,7 +1128,76 @@
                 });
             });
 
-            // --- 5. AUTH & USER DATA ---
+            // --- 5. AUTH & USER DATA (EMAIL & PASSWORD) ---
+            let isSignUpMode = false;
+            const authTitle = document.getElementById('authTitle');
+            const authDisplayName = document.getElementById('authDisplayName');
+            const emailSignInBtn = document.getElementById('emailSignInBtn');
+            const emailSignUpBtn = document.getElementById('emailSignUpBtn');
+            const authToggleMsg = document.getElementById('authToggleMsg');
+
+            authToggleMsg.addEventListener('click', () => {
+                isSignUpMode = !isSignUpMode;
+                if (isSignUpMode) {
+                    authTitle.innerText = "PLAYER REGISTRATION";
+                    authDisplayName.style.display = 'block';
+                    emailSignInBtn.style.display = 'none';
+                    emailSignUpBtn.style.display = 'block';
+                    authToggleMsg.innerText = "Already have an account? Switch to Login";
+                } else {
+                    authTitle.innerText = "PLAYER LOGIN";
+                    authDisplayName.style.display = 'none';
+                    emailSignInBtn.style.display = 'block';
+                    emailSignUpBtn.style.display = 'none';
+                    authToggleMsg.innerText = "Need an account? Switch to Registration";
+                }
+            });
+
+            emailSignInBtn.addEventListener('click', async () => {
+                const email = document.getElementById('authEmail').value.trim();
+                const password = document.getElementById('authPassword').value;
+
+                if (!email || !password) {
+                    alert("Please enter both email and password!");
+                    return;
+                }
+
+                try {
+                    emailSignInBtn.disabled = true;
+                    emailSignInBtn.innerText = "AUTHENTICATING...";
+                    await signInWithEmailAndPassword(auth, email, password);
+                } catch(err) {
+                    alert("Login Failed: " + err.message);
+                } finally {
+                    emailSignInBtn.disabled = false;
+                    emailSignInBtn.innerText = "SIGN IN";
+                }
+            });
+
+            emailSignUpBtn.addEventListener('click', async () => {
+                const name = document.getElementById('authDisplayName').value.trim();
+                const email = document.getElementById('authEmail').value.trim();
+                const password = document.getElementById('authPassword').value;
+
+                if (!name || !email || !password) {
+                    alert("Please fill in name, email, and password!");
+                    return;
+                }
+
+                try {
+                    emailSignUpBtn.disabled = true;
+                    emailSignUpBtn.innerText = "CREATING ACCOUNT...";
+                    const res = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(res.user, { displayName: name });
+                    updateUserUI(res.user, true, false);
+                } catch(err) {
+                    alert("Registration Failed: " + err.message);
+                } finally {
+                    emailSignUpBtn.disabled = false;
+                    emailSignUpBtn.innerText = "REGISTER";
+                }
+            });
+
             let userUnsubscribe = null;
             let teamUnsubscribe = null;
             let transUnsubscribe = null;
@@ -1141,7 +1207,7 @@
                 const userRef = doc(db, 'users', user.uid);
                 const userDoc = await getDoc(userRef);
                 if (!userDoc.exists()) {
-                    await setDoc(userRef, { gmail: user.email, displayName: user.displayName, photoURL: user.photoURL, coins: 0, createdAt: serverTimestamp() });
+                    await setDoc(userRef, { gmail: user.email, email: user.email, displayName: user.displayName || 'Player', coins: 0, createdAt: serverTimestamp() });
                 }
 
                 userUnsubscribe = onSnapshot(userRef, (doc) => {
@@ -1229,7 +1295,7 @@
 
                     document.getElementById('profileName').innerText = user.displayName || 'Player';
                     document.getElementById('profileEmailCard').innerText = user.email;
-                    document.getElementById('profilePic').src = user.photoURL || 'https://via.placeholder.com/100';
+                    document.getElementById('profilePic').src = user.photoURL || 'https://via.placeholder.com/100/ffcc00/000000?text=USER';
 
                     initUserData(user);
 
@@ -1264,10 +1330,6 @@
 
             onAuthStateChanged(auth, (user) => { if (user) { updateUserUI(user, false, true); } else { updateUserUI(null, false, true); } });
 
-            document.getElementById('googleSignInBtn').addEventListener('click', () => {
-                signInWithPopup(auth, provider).then((result) => { updateUserUI(result.user, true, false); }).catch(console.error);
-            });
-
             document.getElementById('userLogoutBtn').addEventListener('click', () => {
                 signOut(auth).then(() => { updateUserUI(null, false, false); }).catch(console.error);
             });
@@ -1277,7 +1339,7 @@
                 if (user) {
                     document.getElementById('modalName').innerText = user.displayName || 'Player';
                     document.getElementById('modalEmail').innerText = user.email;
-                    document.getElementById('modalProfileImg').src = user.photoURL || 'https://via.placeholder.com/100';
+                    document.getElementById('modalProfileImg').src = user.photoURL || 'https://via.placeholder.com/100/ffcc00/000000?text=USER';
                     showModal('profileModal');
                 }
             });
@@ -1308,7 +1370,6 @@
             });
 
             // --- 7. WALLET RECHARGE & WITHDRAWAL ---
-            // Coin Request (Deposit)
             document.getElementById('requestCoinsBtn').addEventListener('click', async (e) => {
                 const btn = e.target;
                 const amount = parseInt(document.getElementById('coinAmountReq').value);
@@ -1317,7 +1378,7 @@
                 try {
                     btn.disabled = true; btn.innerText = "PROCESSING...";
                     await addDoc(collection(db, 'coinRequests'), {
-                        uid: auth.currentUser.uid, gmail: auth.currentUser.email,
+                        uid: auth.currentUser.uid, email: auth.currentUser.email,
                         requestedCoins: amount, amountPKR: amount, status: 'pending', createdAt: serverTimestamp()
                     });
                     alert(`Request placed for ${amount} Coins. Now please send the screenshot via WhatsApp.`);
@@ -1326,7 +1387,6 @@
                 finally { btn.disabled = false; btn.innerText = "1. REQUEST COINS"; }
             });
 
-            // Coin Withdrawal
             document.getElementById('requestWithdrawBtn').addEventListener('click', async (e) => {
                 const btn = e.target;
                 const amount = parseInt(document.getElementById('withdrawAmount').value);
@@ -1370,7 +1430,7 @@
 
                         transaction.set(withdrawRef, {
                             uid: auth.currentUser.uid,
-                            gmail: auth.currentUser.email,
+                            email: auth.currentUser.email,
                             amount: amount,
                             method: method,
                             number: number,
@@ -1446,7 +1506,7 @@
                 });
             });
 
-            // BG Canvas Animation
+            // BG Canvas Particle Animation
             const canvas = document.getElementById('live-bg');
             const ctx = canvas.getContext('2d');
             let width, height, particles;
@@ -1459,9 +1519,9 @@
                 particles.forEach(p => { 
                     ctx.beginPath(); 
                     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); 
-                    ctx.fillStyle = `rgba(255, 51, 0, ${Math.random() * 0.5 + 0.3})`;
+                    ctx.fillStyle = `rgba(255, 204, 0, ${Math.random() * 0.5 + 0.3})`;
                     ctx.shadowBlur = 10;
-                    ctx.shadowColor = "rgba(255, 51, 0, 0.8)";
+                    ctx.shadowColor = "rgba(255, 204, 0, 0.8)";
                     ctx.fill(); 
                     p.x += p.speedX; p.y += p.speedY; 
                     if (p.x < 0 || p.x > width) p.speedX *= -1; 
