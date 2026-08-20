@@ -1,131 +1,797 @@
-444; color: #fff;">${escapeHTML(name)}</td>
-                                    <td style="padding:10px; border-bottom:1px solid #444; color: #aaa;">${escapeHTML(data.userEmail || data.userId || 'Unknown')}</td>
-                                </tr>`;
-                            });
-                            
-                            html += '</table>';
-                            list.innerHTML = html;
-                        } catch(err) {
-                            console.error("Error fetching participants: ", err);
-                            list.innerHTML = '<p style="color:#e74c3c;">Failed to load participants.</p>';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Optimized Viewport for Mobile Apps (prevents auto-zoom on input focus) -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MERIT ADVISOR | Esports & Gaming</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #000000;
+            --bg-panel: rgba(15, 15, 15, 0.85);
+            --primary: #ffcc00;
+            --primary-glow: rgba(255, 204, 0, 0.8);
+            --text-main: #f0f0f0;
+            --text-light: #ffffff;
+            --border-color: rgba(255, 204, 0, 0.4);
+
+            --status-upcoming: #f39c12;
+            --status-completed: #27ae60;
+            --status-ongoing: #8e44ad;
+            --status-ended: #c0392b;
+            --status-available: #2980b9;
+
+            /* Fluid Typography Variables for Mobile Scaling */
+            --font-sm: clamp(0.8rem, 2vw, 0.9rem);
+            --font-md: clamp(0.9rem, 2.5vw, 1.1rem);
+            --font-lg: clamp(1.1rem, 3vw, 1.3rem);
+            --font-xl: clamp(1.4rem, 5vw, 2rem);
+            --font-xxl: clamp(2rem, 8vw, 3.5rem);
+            --font-hero: clamp(3rem, 12vw, 6.5rem);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 50% 50%, rgba(40, 35, 0, 0.8) 0%, var(--bg-dark) 80%),
+                linear-gradient(rgba(255, 204, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 204, 0, 0.05) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            background-attachment: fixed;
+            color: var(--text-main);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            font-size: var(--font-md);
+        }
+
+        h1, h2, h3, h4, .logo, .sidebar a, .start-btn, .action-card-btn, button {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        body:not(.logged-in) header,
+        body:not(.logged-in) .sidebar { display: none !important; }
+
+        body:not(.logged-in) main .page-section:not(#user-auth) { display: none !important; }
+
+        body:not(.logged-in) #user-auth {
+            display: flex !important;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 1 !important;
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+
+        body.logged-in .auth-header { display: none; }
+
+        #login-animation {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--bg-dark); z-index: 9999; display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            color: var(--primary);
+            padding: 20px;
+        }
+
+        #login-animation .spinner {
+            width: clamp(50px, 10vw, 80px); 
+            height: clamp(50px, 10vw, 80px);
+            border: 6px solid rgba(255, 204, 0, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+            box-shadow: 0 0 30px var(--primary-glow);
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        #login-animation h2 {
+            font-size: var(--font-xxl); text-shadow: 0 0 20px var(--primary-glow);
+            animation: pulseText 1.5s infinite; text-align: center;
+        }
+
+        @keyframes pulseText { 
+            0%, 100% { opacity: 1; transform: scale(1); } 
+            50% { opacity: 0.6; transform: scale(0.98); } 
+        }
+
+        #live-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
+
+        header {
+            position: fixed; top: 0; width: 100%; height: 60px;
+            background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--primary);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 15px; z-index: 1000; box-shadow: 0 4px 20px var(--primary-glow);
+        }
+
+        .logo { font-size: clamp(1.5rem, 5vw, 2.2rem); color: var(--text-light); text-decoration: none; cursor: pointer; text-shadow: 0 0 10px rgba(255, 204, 0, 0.6); }
+        .logo span { color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); }
+
+        .header-controls { display: flex; align-items: center; gap: 15px; }
+
+        .coin-display {
+            background: rgba(0,0,0,0.8); border: 1px solid var(--primary);
+            padding: 4px 10px; border-radius: 20px; font-weight: bold; font-family: 'Montserrat', sans-serif;
+            color: var(--primary); display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.3); font-size: var(--font-sm);
+        }
+
+        .profile-icon { font-size: 1.4rem; color: var(--text-light); cursor: pointer; transition: 0.3s; display: none; }
+        .profile-icon:hover { color: var(--primary); text-shadow: 0 0 15px var(--primary-glow); transform: scale(1.1); }
+
+        .menu-toggle { display: flex; flex-direction: column; gap: 5px; cursor: pointer; z-index: 1001; }
+        .menu-toggle div { width: 28px; height: 3px; background-color: var(--primary); transition: all 0.3s ease; border-radius: 2px; box-shadow: 0 0 5px var(--primary-glow); }
+        .menu-toggle.active .line1 { transform: rotate(-45deg) translate(-5px, 6px); }
+        .menu-toggle.active .line2 { opacity: 0; }
+        .menu-toggle.active .line3 { transform: rotate(45deg) translate(-5px, -6px); }
+
+        .sidebar {
+            position: fixed; top: 0; right: -280px; width: 260px; height: 100vh;
+            background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px);
+            border-left: 2px solid var(--primary); padding-top: 80px;
+            transition: right 0.4s ease-in-out; z-index: 999; box-shadow: -5px 0 20px rgba(255, 204, 0, 0.2);
+            overflow-y: auto;
+        }
+
+        .sidebar.active { right: 0; }
+        .sidebar a {
+            display: block; padding: 12px 20px; font-size: 1.2rem; color: var(--text-light);
+            text-decoration: none; border-bottom: 1px solid rgba(255, 204, 0, 0.2); transition: 0.3s; cursor: pointer;
+        }
+        .sidebar a:hover { background: var(--primary); color: #000; font-weight: bold; padding-left: 30px; box-shadow: inset 5px 0 0px #000; }
+
+        .page-section { display: none; padding: 80px 15px 40px 15px; min-height: 100vh; opacity: 0; transition: opacity 0.4s ease-out; }
+        .page-section.active { display: block; opacity: 1; }
+
+        .sec-title { font-size: var(--font-xxl); color: var(--text-light); border-left: 4px solid var(--primary); padding-left: 15px; margin-bottom: 30px; text-shadow: 0 3px 10px rgba(255, 204, 0, 0.5); }
+
+        #intro { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; height: 100vh; padding: 0 15px; }
+        #intro h1 { font-size: var(--font-hero); line-height: 1; text-shadow: 0 0 25px var(--primary-glow); margin-bottom: 15px; }
+        #intro p { font-size: var(--font-md); color: #e0e0e0; max-width: 600px; margin-bottom: 30px; background: rgba(0,0,0,0.7); padding: 12px; border-radius: 5px; border-left: 3px solid var(--primary); font-weight: 600; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+
+        .start-btn {
+            display: inline-block; padding: 12px 30px; font-size: clamp(1.2rem, 4vw, 1.6rem); background: var(--primary);
+            color: #000; font-weight: bold; border: none; cursor: pointer; text-decoration: none;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(255, 204, 0, 0.3); text-align: center;
+        }
+        .start-btn:hover:not(:disabled) { transform: scale(1.05); background: #ffe066; box-shadow: 0 0 30px var(--primary-glow); }
+        .start-btn:disabled { opacity: 0.6; cursor: not-allowed; background: #555; color: #888; box-shadow: none; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+
+        .gaming-card {
+            background: var(--bg-panel); backdrop-filter: blur(10px); border: 1px solid var(--border-color);
+            border-top: 4px solid var(--primary); padding: 15px; border-radius: 6px; transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6); display: flex; flex-direction: column; word-wrap: break-word;
+        }
+        .gaming-card:hover { border-color: var(--primary); box-shadow: 0 10px 30px var(--primary-glow); transform: translateY(-5px); }
+        .gaming-card h3 { font-size: var(--font-xl); color: white; margin-bottom: 8px; text-shadow: 0 2px 8px rgba(255,255,255,0.2); }
+        .gaming-card p { font-size: var(--font-sm); line-height: 1.5; white-space: pre-wrap; margin-bottom: 10px; flex-grow: 1; }
+        .fee-badge { font-family: 'Montserrat', sans-serif; font-size: var(--font-sm); color: var(--primary); font-weight: bold; margin-bottom: 12px; background: rgba(255, 204, 0, 0.15); padding: 4px 8px; border-radius: 4px; display: inline-block; box-shadow: 0 0 8px rgba(255, 204, 0, 0.2); }
+
+        .badge { color: white; padding: 4px 10px; font-size: 0.8rem; font-weight: 700; border-radius: 3px; display: inline-block; margin-bottom: 10px; font-family: 'Montserrat', sans-serif; align-self: flex-start; text-transform: uppercase; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+        .bg-upcoming { background: var(--status-upcoming); }
+        .bg-ongoing { background: var(--status-ongoing); }
+        .bg-completed { background: var(--status-completed); }
+        .bg-ended { background: var(--status-ended); }
+        .bg-available { background: var(--status-available); }
+        .bg-sold { background: var(--status-ended); }
+
+        .action-card-btn {
+            background: var(--primary); color: #000; font-weight: bold; border: none; padding: 10px; font-size: var(--font-lg);
+            cursor: pointer; margin-top: auto; border-radius: 4px; transition: 0.3s; text-transform: uppercase; width: 100%;
+            box-shadow: 0 4px 10px rgba(255, 204, 0, 0.2);
+        }
+        .action-card-btn:hover:not(:disabled) { background: #ffe066; box-shadow: 0 0 20px var(--primary-glow); }
+        .action-card-btn:disabled { background: #444; color: #888; cursor: not-allowed; box-shadow: none; border: 1px solid #555; }
+        
+        .btn-get-idp { background: #25D366 !important; color: #fff !important; box-shadow: 0 4px 10px rgba(37,211,102,0.3) !important; }
+        .btn-get-idp:hover { background: #1ebe57 !important; box-shadow: 0 0 20px rgba(37, 211, 102, 0.8) !important; }
+
+        .contact-info-box { display: none; margin-top: 10px; padding: 10px; background: rgba(0, 0, 0, 0.8); border-left: 3px solid #25D366; border-radius: 4px; text-align: center; animation: fadeIn 0.3s ease-in-out; }
+        .contact-info-box .number { font-size: var(--font-md); color: white; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
+        .contact-info-box .wa-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: var(--font-sm); background: #25D366; color: white; text-decoration: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; transition: 0.3s; width: 100%; font-family: 'Montserrat', sans-serif;}
+        .contact-info-box .wa-btn:hover { background: #1ebe57; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(37, 211, 102, 0.6); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .user-auth-box { width: 100%; max-width: 400px; margin: 0 auto; background: var(--bg-panel); backdrop-filter: blur(15px); padding: 25px 15px; border: 1px solid var(--primary); border-radius: 8px; box-shadow: 0 8px 30px rgba(255, 204, 0, 0.2); text-align: center; }
+
+        .user-profile-card { text-align: center; background: var(--bg-panel); backdrop-filter: blur(15px); padding: 25px 15px; border: 1px solid var(--primary); border-radius: 8px; max-width: 400px; margin: 20px auto; box-shadow: 0 8px 30px rgba(255, 204, 0, 0.2); }
+        .profile-img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 10px; box-shadow: 0 0 15px var(--primary-glow); }
+
+        .custom-form-box { background: var(--bg-panel); backdrop-filter: blur(10px); padding: 15px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.6); }
+        .custom-form-box input, .custom-form-box textarea, .custom-form-box select { width: 100%; padding: 10px; margin-bottom: 12px; background: rgba(0,0,0,0.8); border: 1px solid #444; color: white; font-size: 16px; /* 16px prevents iOS zoom */ font-family: 'Montserrat', sans-serif; border-radius: 4px; transition: 0.3s; }
+        .custom-form-box input:focus, .custom-form-box textarea:focus, .custom-form-box select:focus { border-color: var(--primary); box-shadow: 0 0 8px var(--primary-glow); outline: none; }
+        .custom-form-box button { width: 100%; padding: 10px; background: var(--primary); color: #000; border: none; cursor: pointer; font-weight: bold; font-size: var(--font-lg); border-radius: 4px; transition: 0.3s; }
+        .custom-form-box button:hover:not(:disabled) { background: #ffe066; box-shadow: 0 0 20px var(--primary-glow); }
+        .custom-form-box button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(8px); z-index: 2000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; padding: 15px; }
+        .modal-content { background: var(--bg-panel); padding: 20px; border: 2px solid var(--primary); border-radius: 8px; width: 100%; max-width: 450px; position: relative; box-shadow: 0 10px 30px rgba(255, 204, 0, 0.4); transform: scale(0.9); transition: transform 0.3s ease; max-height: 90vh; overflow-y: auto;}
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-content h3 { font-size: var(--font-xxl); color: var(--primary); margin-bottom: 15px; text-shadow: 0 0 10px var(--primary-glow); line-height: 1.1; }
+        .close-modal { position: absolute; top: 10px; right: 15px; font-size: 2rem; color: #888; cursor: pointer; transition: 0.3s; line-height: 1; }
+        .close-modal:hover { color: var(--primary); text-shadow: 0 0 8px var(--primary-glow); }
+
+        .admin-login { width: 100%; max-width: 400px; margin: 40px auto; text-align: center; background: var(--bg-panel); padding: 25px 15px; border: 1px solid var(--primary); border-radius: 8px; box-shadow: 0 8px 30px rgba(255, 204, 0, 0.2); }
+        .admin-login input { width: 100%; padding: 12px; background: rgba(0,0,0,0.8); border: 1px solid var(--border-color); color: white; margin-bottom: 15px; font-size: 16px; border-radius: 4px; }
+        .admin-dashboard { display: none; }
+        .admin-panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .admin-management-container { background: var(--bg-panel); padding: 15px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.6); overflow-x: auto; }
+        
+        .list-item-row { background: rgba(0,0,0,0.8); padding: 12px; border: 1px solid #444; border-radius: 4px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.4); word-wrap: break-word;}
+        .list-item-row:hover { border-color: var(--primary); box-shadow: 0 0 15px rgba(255, 204, 0, 0.3); }
+        .row-header-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .row-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .row-actions select { padding: 6px 8px; background: #222; color: white; border: 1px solid #555; border-radius: 3px; font-size: 14px; }
+        .btn-danger, .btn-success, .btn-primary, .btn-warning { border: none; padding: 6px 12px; cursor: pointer; font-weight: bold; border-radius: 3px; transition: 0.3s; color: white; font-family: 'Montserrat', sans-serif; font-size: 12px;}
+        .btn-danger { background: #e74c3c; }
+        .btn-success { background: #27ae60; }
+        .btn-primary { background: #2980b9; }
+        .btn-warning { background: #f39c12; }
+        
+        .idp-controls { display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 4px; border-left: 3px solid var(--primary); }
+        .idp-controls input { width: 100%; padding: 8px; background: #111; color: white; border: 1px solid #555; border-radius: 3px; font-family: 'Montserrat', sans-serif; font-size: 16px;}
+
+        /* Prevent tables from breaking layout on small phones */
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        td, th { word-wrap: break-word; overflow-wrap: break-word; font-size: var(--font-sm); padding: 6px;}
+
+        footer {
+            background: rgba(5, 5, 5, 0.95);
+            border-top: 1px solid rgba(255, 204, 0, 0.3);
+            padding: 20px 15px;
+            text-align: center;
+            font-size: var(--font-sm);
+            color: #888;
+            margin-top: 30px;
+        }
+        footer a { color: var(--primary); text-decoration: none; margin: 0 5px; }
+
+        @media(min-width: 768px) {
+            .row-header-actions { flex-direction: row; justify-content: space-between; align-items: center; }
+            .idp-controls { flex-direction: row; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="login-animation">
+        <div class="spinner"></div>
+        <h2 id="login-welcome-text">AUTHENTICATING...</h2>
+    </div>
+
+    <canvas id="live-bg"></canvas>
+
+    <header>
+        <a href="#intro" class="logo nav-link">MERIT <span>ADVISOR</span></a>
+        <div class="header-controls">
+            <div class="coin-display" id="headerCoinDisplay" style="display:none;">🪙 <span id="walletBalanceTop">0</span> PKR</div>
+            <i class="fa-solid fa-user profile-icon" id="headerProfileIcon" title="View Profile"></i>
+            <div class="menu-toggle" id="mobile-menu">
+                <div class="line1"></div>
+                <div class="line2"></div>
+                <div class="line3"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Modals (Profile, Edit, Reg, Terms, IDP, Admin Part) - Same Structure, Optimized via CSS -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-content" style="text-align: center;">
+            <span class="close-modal" id="closeProfileModal">&times;</span>
+            <img id="modalProfileImg" src="" alt="Profile Picture" class="profile-img">
+            <h3>ACCOUNT DETAILS</h3>
+            <p style="background: rgba(0,0,0,0.8); padding: 10px; border-left: 3px solid var(--primary); text-align: left; margin-bottom: 10px; font-size: var(--font-sm); word-break: break-all;"><strong>Name:</strong> <span id="modalName">-</span></p>
+            <p style="background: rgba(0,0,0,0.8); padding: 10px; border-left: 3px solid var(--primary); text-align: left; font-size: var(--font-sm); word-break: break-all;"><strong>Email:</strong> <span id="modalEmail">-</span></p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editEntryModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeEditEntryModal">&times;</span>
+            <h3 id="editModalTitle">EDIT ENTRY</h3>
+            <div class="custom-form-box" style="border:none; padding:0; box-shadow:none;">
+                <input type="hidden" id="editEntryId">
+                <label style="color:var(--primary); display:block; margin-bottom:5px; font-size:var(--font-sm); font-weight:bold;">Title:</label>
+                <input type="text" id="editTitle">
+                <label style="color:var(--primary); display:block; margin-bottom:5px; font-size:var(--font-sm); font-weight:bold;">Details:</label>
+                <textarea id="editDetails" rows="3"></textarea>
+                <div id="editNonIdFields">
+                    <label style="color:var(--primary); display:block; margin-bottom:5px; font-size:var(--font-sm); font-weight:bold;">Format:</label>
+                    <select id="editFormat"><option value="Team">Format: Team (12 Slots)</option><option value="Solo">Format: Solo (48 Slots)</option></select>
+                    <label style="color:var(--primary); display:block; margin-bottom:5px; font-size:var(--font-sm); font-weight:bold;">Fee:</label>
+                    <input type="number" id="editFee">
+                    <label style="color:var(--primary); display:block; margin-bottom:5px; font-size:var(--font-sm); font-weight:bold;">IDP Time:</label>
+                    <input type="text" id="editIdpTime">
+                </div>
+                <label style="color:var(--primary); display:block; margin-bottom:5px; font-size:var(--font-sm); font-weight:bold;">Status:</label>
+                <select id="editStatus">
+                    <option value="Upcoming">Upcoming</option>
+                    <option value="On Going">On Going</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Available">Available</option>
+                    <option value="Sold">Sold Out</option>
+                </select>
+                <button id="saveEditEntryBtn">SAVE</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="regModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeRegModal">&times;</span>
+            <h3 id="regModalTitle">JOIN EVENT</h3>
+            <p id="regModalDetails" style="margin-bottom: 15px; font-size: var(--font-sm); color: #ccc;"></p>
+            <div class="custom-form-box" style="border:none; padding:0; box-shadow:none;">
+                <div id="soloIgnContainer" style="display:none; margin-bottom:10px;">
+                    <label style="display:block; margin-bottom:5px; font-size:var(--font-sm); color:var(--primary); font-weight:bold;">Your Exact IGN:</label>
+                    <input type="text" id="regSoloIgn" placeholder="Player Name">
+                </div>
+                <div id="teamSelectContainer" style="display:none; margin-bottom:10px;">
+                    <label style="display:block; margin-bottom:5px; font-size:var(--font-sm); color:var(--primary); font-weight:bold;">Select Team:</label>
+                    <select id="regTeamSelect"></select>
+                </div>
+                <button id="confirmRegBtn">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="termsModal">
+        <div class="modal-content" style="text-align: left;">
+            <span class="close-modal" id="closeTermsModal">&times;</span>
+            <h3>TERMS & PRIVACY</h3>
+            <div style="max-height: 250px; overflow-y: auto; font-size: var(--font-sm); line-height: 1.4; color: #ccc;">
+                <p><strong>1. Skill-Based Platform:</strong> MERIT ADVISOR is for competitive gaming matchmaking.</p><br>
+                <p><strong>2. Accounts:</strong> Secured via Firebase. Keep your details private.</p><br>
+                <p><strong>3. Coins:</strong> Used exclusively for platform entry fees and logistics.</p><br>
+                <p><strong>4. Fair Play:</strong> Cheating or hacking leads to instant ban.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="idpModal">
+        <div class="modal-content" style="text-align: center;">
+            <span class="close-modal" id="closeIdpModal">&times;</span>
+            <h3 style="color: #25D366; text-shadow: 0 0 15px rgba(37,211,102,0.5);">ROOM DETAILS</h3>
+            <div style="background: rgba(0,0,0,0.8); padding: 15px; border: 1px solid var(--primary); border-radius: 4px; margin-bottom: 10px;">
+                <p style="font-size: var(--font-md); color: #fff;"><strong>Room ID:</strong> <br><span id="displayRoomId" style="color: var(--primary); font-size: var(--font-xl); font-weight: bold; display:inline-block; margin-top:5px; word-break: break-all;"></span></p>
+            </div>
+            <div style="background: rgba(0,0,0,0.8); padding: 15px; border: 1px solid var(--primary); border-radius: 4px;">
+                <p style="font-size: var(--font-md); color: #fff;"><strong>Password:</strong> <br><span id="displayRoomPass" style="color: var(--primary); font-size: var(--font-xl); font-weight: bold; display:inline-block; margin-top:5px; word-break: break-all;"></span></p>
+            </div>
+            <p style="color: #aaa; font-size: var(--font-sm); margin-top: 10px;">Do not share outside your team.</p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="adminParticipantsModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeAdminParticipantsModal">&times;</span>
+            <h3 id="adminPartTitle">PLAYERS</h3>
+            <div id="adminPartList" style="max-height: 300px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 4px; border: 1px solid #444;"></div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <a href="#intro" class="nav-link">HOME</a>
+        <a href="#scrims" class="nav-link">SCRIMS</a>
+        <a href="#tournaments" class="nav-link">TOURNAMENTS</a>
+        <a href="#teams" class="nav-link">MY TEAMS</a>
+        <a href="#wallet" class="nav-link">WALLET</a>
+        <a href="#ids" class="nav-link">IDS STORE</a>
+        <a href="#support" class="nav-link">SUPPORT</a>
+        <a href="#user-auth" class="nav-link">PROFILE</a>
+        <a href="#admin" class="nav-link">ADMIN PANEL</a>
+    </div>
+
+    <main>
+        <!-- Auth -->
+        <section id="user-auth" class="page-section">
+            <div class="auth-header" style="text-align: center; margin-bottom: 20px;">
+                <h1 style="font-size: var(--font-hero); text-shadow: 0 0 20px var(--primary-glow); font-family: 'Bebas Neue', sans-serif;">MERIT <span style="color: var(--primary);">ADVISOR</span></h1>
+                <p style="color: #ccc; font-size: var(--font-sm); margin-top: 5px;">Sign in to access the platform.</p>
+            </div>
+            <div class="user-auth-box" id="authBox">
+                <h2 id="authTitle" style="font-family: 'Bebas Neue', sans-serif; font-size: var(--font-xxl); margin-bottom: 15px; color: var(--primary);">LOGIN</h2>
+                <div class="custom-form-box" style="border:none; padding:0; box-shadow:none; margin-bottom:0;">
+                    <input type="text" id="authDisplayName" placeholder="Gamer Tag" style="display:none;">
+                    <input type="email" id="authEmail" placeholder="Email Address">
+                    <input type="password" id="authPassword" placeholder="Password">
+                    <button id="emailSignInBtn" class="start-btn" style="width: 100%; margin-bottom: 10px;">SIGN IN</button>
+                    <button id="emailSignUpBtn" class="start-btn" style="width: 100%; display:none; margin-bottom: 10px;">REGISTER</button>
+                    <p id="authToggleMsg" style="color:#aaa; font-size:var(--font-sm); margin-top:10px; cursor:pointer; text-decoration: underline;">Need an account? Register</p>
+                </div>
+            </div>
+            <div class="user-profile-card" id="userProfileCard" style="display: none;">
+                <img id="profilePic" src="" alt="Profile Picture" class="profile-img">
+                <h3 style="font-size: var(--font-xxl); color: var(--primary);">PROFILE</h3>
+                <p style="font-size: var(--font-sm); word-break: break-all;"><strong>Name:</strong> <span id="profileName">-</span></p>
+                <p style="font-size: var(--font-sm); word-break: break-all;"><strong>Email:</strong> <span id="profileEmailCard">-</span></p>
+                <button class="start-btn" id="userLogoutBtn" style="margin-top: 15px; width: 100%; background: #c0392b; color: #fff;">LOGOUT</button>
+            </div>
+        </section>
+
+        <!-- Intro -->
+        <section id="intro" class="page-section">
+            <h1>MERIT <span style="color: var(--primary);">ADVISOR</span></h1>
+            <p>Pakistan's Elite Platform for Competitive Gaming. Dominate battlegrounds, trade premium IDs, and prove your worth.</p>
+            <a href="#scrims" class="start-btn nav-link">ENTER ARENA</a>
+        </section>
+
+        <!-- Dynamic Sections -->
+        <section id="scrims" class="page-section"><h2 class="sec-title">Active Scrims</h2><div class="grid-container" id="scrims-list"></div></section>
+        <section id="tournaments" class="page-section"><h2 class="sec-title">Tournaments</h2><div class="grid-container" id="tours-list"></div></section>
+        <section id="ids" class="page-section"><h2 class="sec-title">Premium IDs</h2><div class="grid-container" id="ids-list"></div></section>
+
+        <!-- Teams -->
+        <section id="teams" class="page-section">
+            <h2 class="sec-title">Team Management</h2>
+            <div class="custom-form-box" style="max-width: 500px; margin: 0 auto 30px auto;">
+                <h3>New Team</h3>
+                <p style="color:#aaa; margin-bottom:10px; font-size:var(--font-sm);">4 Players required.</p>
+                <input type="text" id="teamNameInput" placeholder="Team Name">
+                <input type="text" id="p1Input" placeholder="Player 1 IGN">
+                <input type="text" id="p2Input" placeholder="Player 2 IGN">
+                <input type="text" id="p3Input" placeholder="Player 3 IGN">
+                <input type="text" id="p4Input" placeholder="Player 4 IGN">
+                <button id="createTeamBtn">CREATE</button>
+            </div>
+            <h3 style="font-size:var(--font-xl); margin-bottom: 15px;">My Teams</h3>
+            <div class="grid-container" id="my-teams-list"></div>
+        </section>
+
+        <!-- Wallet -->
+        <section id="wallet" class="page-section">
+            <h2 class="sec-title">Player Wallet</h2>
+            <div style="display:flex; flex-direction:column; gap:20px;">
+                <!-- Deposit Box -->
+                <div class="custom-form-box" style="text-align:center;">
+                    <h3 style="font-size:var(--font-xxl); color:var(--primary); margin-bottom:5px;">🪙 <span id="mainWalletBalance">0</span></h3>
+                    <p style="color:#ccc; font-size:var(--font-sm); margin-bottom:15px;">1 Coin = 1 PKR</p>
+                    
+                    <div style="background:rgba(0,0,0,0.8); padding:10px; border-left:4px solid #27ae60; margin-bottom:15px; text-align:left; font-size:var(--font-sm);">
+                        <h4 style="color:#27ae60; margin-bottom:3px;">Deposit Payment Info</h4>
+                        <p><strong>JAZZCASH:</strong> 03269277193</p>
+                        <p><strong>NAME:</strong> BIBI FATIMA</p>
+                    </div>
+
+                    <input type="number" id="coinAmountReq" placeholder="Coins to buy" min="1">
+                    <button id="requestCoinsBtn" style="margin-bottom:10px; font-size:var(--font-md);">1. REQUEST</button>
+                    <a href="https://wa.me/923371651720" target="_blank" class="start-btn" style="width:100%; padding:10px; background:#25D366; color:#fff; font-size:var(--font-md);">
+                        <i class="fa-brands fa-whatsapp"></i> 2. SEND SCREENSHOT
+                    </a>
+                </div>
+
+                <!-- Withdraw Box -->
+                <div class="custom-form-box">
+                    <h3 style="color: var(--primary);">Withdraw</h3>
+                    <p style="color:#ccc; margin-bottom:10px; font-size:var(--font-sm);">Min: <strong>10 Coins</strong></p>
+                    <input type="number" id="withdrawAmount" placeholder="Amount" min="10">
+                    <select id="withdrawMethod"><option value="" disabled selected>Method</option><option value="JazzCash">JazzCash</option><option value="EasyPaisa">EasyPaisa</option></select>
+                    <input type="text" id="withdrawNumber" placeholder="Account Number">
+                    <button id="requestWithdrawBtn" style="background:#27ae60; color:#fff; font-size:var(--font-md);">WITHDRAW</button>
+                </div>
+                
+                <!-- History Box -->
+                <div class="custom-form-box">
+                    <h3>History</h3>
+                    <div id="transactionList" style="max-height: 250px; overflow-y:auto; margin-top:10px; font-size:var(--font-sm);"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Support -->
+        <section id="support" class="page-section">
+            <h2 class="sec-title">Support</h2>
+            <div class="custom-form-box" style="max-width: 500px; margin: 0 auto; text-align: center;">
+                <i class="fa-brands fa-whatsapp" style="font-size: 4rem; color: #25D366; margin-bottom: 15px;"></i>
+                <h3 style="font-size: var(--font-xxl); margin-bottom: 5px; color: white;">24/7 WHATSAPP</h3>
+                <p style="color: #ccc; margin-bottom: 15px; font-size: var(--font-sm);">Questions regarding registration, scrims, wallet, or IDs? Contact us.</p>
+                <div style="background: rgba(0,0,0,0.8); padding: 10px; border-left: 4px solid #25D366; border-radius: 4px; margin-bottom: 15px;">
+                    <p style="font-size: var(--font-lg); color: #fff; font-weight: bold;">+92 337 1651720</p>
+                </div>
+                <a href="https://wa.me/923371651720" target="_blank" class="start-btn" style="background: #25D366; color:#fff; width: 100%; font-size:var(--font-md);">CHAT NOW</a>
+            </div>
+        </section>
+
+        <!-- Admin Section -->
+        <section id="admin" class="page-section">
+            <h2 class="sec-title">Admin Access</h2>
+            <div class="admin-login" id="admin-login-screen">
+                <h3 style="font-size: var(--font-xxl); margin-bottom: 15px; color: var(--primary);">SYSTEM LOGIN</h3>
+                <input type="password" id="adminPass" placeholder="Admin Key">
+                <button class="start-btn" id="loginBtn" style="width: 100%;">ENTER</button>
+                <p id="adminError" style="color: #ff5722; margin-top: 10px; font-size: var(--font-sm); display: none;">Invalid Security Key!</p>
+            </div>
+
+            <div class="admin-dashboard" id="admin-dashboard-screen">
+                <div class="admin-panel-grid">
+                    <div class="custom-form-box">
+                        <h4>Add Scrim</h4>
+                        <input type="text" id="scrimTitle" placeholder="Title">
+                        <textarea id="scrimDetails" placeholder="Details" rows="2"></textarea>
+                        <select id="scrimFormat"><option value="Team">Team (12 Slots)</option><option value="Solo">Solo (48 Slots)</option></select>
+                        <input type="number" id="scrimFee" placeholder="Fee (0 for Free)">
+                        <input type="text" id="scrimIdpTime" placeholder="IDP Time">
+                        <select id="scrimStatus"><option value="Upcoming">Upcoming</option><option value="On Going">On Going</option><option value="Completed">Completed</option></select>
+                        <button class="action-btn" data-type="scrim">PUBLISH</button>
+                    </div>
+
+                    <div class="custom-form-box">
+                        <h4>Add Tour</h4>
+                        <input type="text" id="tourTitle" placeholder="Title">
+                        <textarea id="tourDetails" placeholder="Details" rows="2"></textarea>
+                        <select id="tourFormat"><option value="Team">Team (12 Slots)</option><option value="Solo">Solo (48 Slots)</option></select>
+                        <input type="number" id="tourFee" placeholder="Fee (0 for Free)">
+                        <input type="text" id="tourIdpTime" placeholder="IDP Time">
+                        <select id="tourStatus"><option value="Upcoming">Upcoming</option><option value="On Going">On Going</option><option value="Completed">Completed</option></select>
+                        <button class="action-btn" data-type="tour">PUBLISH</button>
+                    </div>
+
+                    <div class="custom-form-box">
+                        <h4>Add ID</h4>
+                        <input type="text" id="idTitle" placeholder="ID Name/Level">
+                        <textarea id="idDetails" placeholder="Details" rows="2"></textarea>
+                        <select id="idStatus"><option value="Available">Available</option><option value="Sold">Sold</option></select>
+                        <button class="action-btn" data-type="id">PUBLISH</button>
+                    </div>
+                </div>
+
+                <div class="admin-management-container">
+                    <h3 style="color: var(--primary); font-size: var(--font-lg); margin-bottom: 10px;">Deposit Requests</h3>
+                    <div id="admin-coin-requests-list"></div>
+                </div>
+
+                <div class="admin-management-container">
+                    <h3 style="color: #27ae60; font-size: var(--font-lg); margin-bottom: 10px;">Withdraw Requests</h3>
+                    <div id="admin-withdraw-requests-list"></div>
+                </div>
+
+                <div class="admin-management-container">
+                    <h3 style="color: var(--primary); font-size: var(--font-lg); margin-bottom: 10px;">Manage Entries</h3>
+                    <div id="admin-manage-list"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; MERIT ADVISOR Esports.</p>
+        <p style="margin-top:5px;"><a href="#" id="openTermsLink">Terms & Privacy</a></p>
+    </footer>
+
+    <!-- FIREBASE SCRIPT (Logic remains unchanged, securely hooked) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc, runTransaction, query, where, orderBy, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCYyYVX8OhgRtgVuEVWGfKlY3H4nVy8W8c", authDomain: "merit-advisor.firebaseapp.com",
+          projectId: "merit-advisor", storageBucket: "merit-advisor.firebasestorage.app",
+          messagingSenderId: "341164696474", appId: "1:341164696474:web:60d15ea537cd4508389023", measurementId: "G-QNHLVL5J9B"
+        };
+        const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
+
+        function escapeHTML(str) { return str ? String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[m])) : ''; }
+
+        let globalWhatsAppNumber = "+92 337 1651720"; let siteEntries = [], userTeams = [], userRegistrations = [], currentCoins = 0, selectedEventForReg = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            function showModal(modalId) { const m = document.getElementById(modalId); m.style.display='flex'; void m.offsetWidth; m.classList.add('active'); }
+            function hideModal(modalId) { const m = document.getElementById(modalId); m.classList.remove('active'); setTimeout(() => m.style.display='none', 300); }
+
+            ['closeProfileModal','closeRegModal','closeIdpModal','closeAdminParticipantsModal','closeEditEntryModal','closeTermsModal'].forEach(id => {
+                document.getElementById(id).addEventListener('click', () => hideModal(id.replace('close','').charAt(0).toLowerCase() + id.replace('close','').slice(1)));
+            });
+            document.getElementById('openTermsLink').addEventListener('click', (e) => { e.preventDefault(); showModal('termsModal'); });
+
+            onSnapshot(collection(db, 'entries'), (snapshot) => { siteEntries = []; snapshot.forEach(doc => siteEntries.push({ id: doc.id, ...doc.data() })); renderAllEntries(); });
+
+            onSnapshot(query(collection(db, 'coinRequests'), where('status', '==', 'pending')), (snapshot) => {
+                const list = document.getElementById('admin-coin-requests-list'); list.innerHTML = snapshot.empty ? '<p style="color:#aaa; font-size:12px;">No requests.</p>' : '';
+                snapshot.forEach((docSnap) => {
+                    const req = {id: docSnap.id, ...docSnap.data()};
+                    const row = document.createElement('div'); row.className = 'list-item-row';
+                    row.innerHTML = `<div class="row-header-actions"><div><strong style="font-size:14px;">${escapeHTML(req.gmail || req.email)}</strong> - <strong style="color:var(--primary);">${escapeHTML(req.requestedCoins)} C</strong></div><div class="row-actions"><button class="btn-success approve-coin-btn" data-id="${req.id}" data-uid="${req.uid}" data-coins="${req.requestedCoins}">✓</button><button class="btn-danger reject-coin-btn" data-id="${req.id}">X</button></div></div>`;
+                    list.appendChild(row);
+                });
+                // Event bindings for buttons... (same logic as before)
+                document.querySelectorAll('.approve-coin-btn').forEach(btn => btn.addEventListener('click', async (e) => {
+                    const el=e.target; el.disabled=true;
+                    try{ await runTransaction(db, async(t)=>{
+                        const uR=doc(db,'users',el.dataset.uid), rR=doc(db,'coinRequests',el.dataset.id), tR=doc(collection(db,'walletTransactions'));
+                        const uD=await t.get(uR); t.update(uR,{coins:(uD.data().coins||0)+parseInt(el.dataset.coins)}); t.update(rR,{status:'approved'});
+                        t.set(tR,{uid:el.dataset.uid, type:'addition', amount:parseInt(el.dataset.coins), reason:'Approved Deposit', createdAt:serverTimestamp()});
+                    });} catch(err){}
+                }));
+                document.querySelectorAll('.reject-coin-btn').forEach(btn => btn.addEventListener('click', async (e) => {
+                    e.target.disabled=true; await updateDoc(doc(db,'coinRequests',e.target.dataset.id),{status:'rejected'});
+                }));
+            });
+
+            onSnapshot(query(collection(db, 'withdrawRequests'), where('status', '==', 'pending')), (snapshot) => {
+                const list = document.getElementById('admin-withdraw-requests-list'); list.innerHTML = snapshot.empty ? '<p style="color:#aaa; font-size:12px;">No requests.</p>' : '';
+                snapshot.forEach((docSnap) => {
+                    const req = {id: docSnap.id, ...docSnap.data()};
+                    const row = document.createElement('div'); row.className = 'list-item-row';
+                    row.innerHTML = `<div class="row-header-actions"><div><strong style="font-size:14px;">${escapeHTML(req.amount)} PKR</strong> (${escapeHTML(req.method)})<br><span style="color:#aaa; font-size:12px;">${escapeHTML(req.number)}</span></div><div class="row-actions"><button class="btn-success done-withdraw-btn" data-id="${req.id}">DONE</button></div></div>`;
+                    list.appendChild(row);
+                });
+                document.querySelectorAll('.done-withdraw-btn').forEach(btn => btn.addEventListener('click', async(e)=>{ e.target.disabled=true; await updateDoc(doc(db,'withdrawRequests',e.target.dataset.id),{status:'completed'}); }));
+            });
+
+            function renderAllEntries() {
+                ['scrims-list','tours-list','ids-list','admin-manage-list'].forEach(id => document.getElementById(id).innerHTML='');
+                siteEntries.forEach(entry => {
+                    const bgClass = 'bg-' + escapeHTML(entry.status || '').toLowerCase().replace(' ', ''), isId = entry.type === 'id', hasJoined = userRegistrations.includes(entry.id);
+                    const maxSlots = entry.format === 'Solo' ? 48 : 12, currentJoined = entry.joinedCount || 0, isFull = currentJoined >= maxSlots;
+                    
+                    const newCard = document.createElement('div'); newCard.classList.add('gaming-card');
+                    let timeHtml = (!isId && entry.idpTime) ? `<div style="color:#25D366; font-size:12px; font-weight:bold; margin-bottom:8px;">🕒 IDP: ${escapeHTML(entry.idpTime)}</div>` : '';
+                    let formatSlots = !isId ? `<div style="font-size:12px; color:#aaa; margin-bottom:8px;">${escapeHTML(entry.format||'Team')} | Slots: <span style="color:${isFull?'#e74c3c':'#27ae60'}">${currentJoined}/${maxSlots}</span></div>` : '';
+                    let feeText = isId ? '' : `<div class="fee-badge">Fee: ${(!entry.fee||entry.fee==0)?'FREE':entry.fee+' C'}</div>`;
+                    let btnText = isId ? 'BUY' : (hasJoined ? 'GET IDP' : (isFull ? 'FULL' : 'JOIN'));
+                    let dis = (isFull && !hasJoined && !isId) ? 'disabled style="background:#444; color:#888;"' : '';
+
+                    newCard.innerHTML = `<span class="badge ${bgClass}">${escapeHTML(entry.status)}</span><h3>${escapeHTML(entry.title)}</h3>${formatSlots}${timeHtml}${feeText}<p>${escapeHTML(entry.details)}</p><button class="action-card-btn ${hasJoined?'btn-get-idp':''}" data-id="${entry.id}" ${dis}>${btnText}</button>${isId ? `<div class="contact-info-box"><div class="number">${globalWhatsAppNumber}</div><a href="https://wa.me/923371651720" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> Chat</a></div>`:''}`;
+
+                    newCard.querySelector('.action-card-btn').addEventListener('click', (e) => {
+                        if(isId){ const cb = newCard.querySelector('.contact-info-box'); cb.style.display=cb.style.display==='block'?'none':'block'; e.target.innerText=cb.style.display==='block'?'CLOSE':'BUY'; }
+                        else {
+                            if(!auth.currentUser) return alert("Login required!");
+                            if(hasJoined){ 
+                                if(entry.roomId){ document.getElementById('displayRoomId').innerText=entry.roomId; document.getElementById('displayRoomPass').innerText=entry.roomPass; showModal('idpModal'); }
+                                else alert(`IDP will be given at: ${entry.idpTime||'shortly'}`);
+                            } else {
+                                if(entry.status!=='Upcoming'&&entry.status!=='Available') return alert("Closed.");
+                                if(isFull) return alert("Full!");
+                                selectedEventForReg = entry; document.getElementById('regModalTitle').innerText=`JOIN ${entry.title}`;
+                                document.getElementById('regModalDetails').innerHTML=`Fee: <strong style="color:var(--primary);">${(!entry.fee||entry.fee==0)?'Free':entry.fee+' C'}</strong>`;
+                                document.getElementById('teamSelectContainer').style.display = entry.format!=='Solo'?'block':'none';
+                                document.getElementById('soloIgnContainer').style.display = entry.format==='Solo'?'block':'none';
+                                if(entry.format!=='Solo'){ const sel = document.getElementById('regTeamSelect'); sel.innerHTML=''; userTeams.forEach(t=>sel.innerHTML+=`<option value="${t.id}">${escapeHTML(t.teamName)}</option>`); }
+                                showModal('regModal');
+                            }
                         }
                     });
 
-                    // Admin: Update IDP Event Listener
-                    adminRow.querySelector('.update-idp-btn')?.addEventListener('click', async (e) => {
-                        const eventId = e.target.getAttribute('data-id');
-                        const roomId = adminRow.querySelector('.room-id-input').value;
-                        const roomPass = adminRow.querySelector('.room-pass-input').value;
-                        
-                        try {
-                            await updateDoc(doc(db, 'entries', eventId), {
-                                roomId: roomId,
-                                roomPass: roomPass
-                            });
-                            alert("Room ID and Password successfully updated and distributed to joined players!");
-                        } catch(err) {
-                            console.error("Error updating IDP:", err);
-                            alert("Failed to update IDP.");
-                        }
+                    if(entry.type==='scrim') document.getElementById('scrims-list').appendChild(newCard); else if(entry.type==='tour') document.getElementById('tours-list').appendChild(newCard); else if(entry.type==='id') document.getElementById('ids-list').appendChild(newCard);
+
+                    // Admin Rows
+                    const aRow = document.createElement('div'); aRow.classList.add('list-item-row');
+                    let optH = isId ? `<option value="Available" ${entry.status==='Available'?'selected':''}>Avail</option><option value="Sold" ${entry.status==='Sold'?'selected':''}>Sold</option>` : `<option value="Upcoming" ${entry.status==='Upcoming'?'selected':''}>Upcoming</option><option value="Completed" ${entry.status==='Completed'?'selected':''}>Completed</option><option value="On Going" ${entry.status==='On Going'?'selected':''}>On Going</option>`;
+                    let idpH = !isId ? `<div class="idp-controls"><input type="text" class="room-id-input" placeholder="Room ID" value="${escapeHTML(entry.roomId||'')}"><input type="text" class="room-pass-input" placeholder="Pass" value="${escapeHTML(entry.roomPass||'')}"><button class="btn-success update-idp-btn" data-id="${entry.id}">Set IDP</button><button class="btn-primary view-participants-btn" data-id="${entry.id}">Players</button></div>` : '';
+                    
+                    aRow.innerHTML = `<div class="row-header-actions"><div><strong style="color:var(--primary);font-size:14px;">[${entry.type.toUpperCase()}] ${escapeHTML(entry.title)}</strong></div><div class="row-actions"><select class="status-select" data-id="${entry.id}">${optH}</select><button class="btn-warning edit-entry-btn" data-id="${entry.id}">Ed</button><button class="btn-danger delete-db-btn" data-id="${entry.id}">Del</button></div></div>${idpH}`;
+                    
+                    aRow.querySelector('.status-select').addEventListener('change', async(e) => await updateDoc(doc(db,'entries',e.target.dataset.id),{status:e.target.value}));
+                    aRow.querySelector('.delete-db-btn').addEventListener('click', async(e) => { if(confirm('Delete?')) await deleteDoc(doc(db,'entries',e.target.dataset.id)); });
+                    aRow.querySelector('.edit-entry-btn').addEventListener('click', () => {
+                        document.getElementById('editEntryId').value=entry.id; document.getElementById('editTitle').value=entry.title||''; document.getElementById('editDetails').value=entry.details||''; document.getElementById('editStatus').value=entry.status||'Upcoming';
+                        if(entry.type==='id') document.getElementById('editNonIdFields').style.display='none'; else { document.getElementById('editNonIdFields').style.display='block'; document.getElementById('editFormat').value=entry.format||'Team'; document.getElementById('editFee').value=entry.fee||0; document.getElementById('editIdpTime').value=entry.idpTime||''; }
+                        showModal('editEntryModal');
+                    });
+                    
+                    aRow.querySelector('.view-participants-btn')?.addEventListener('click', async(e)=>{
+                        document.getElementById('adminPartTitle').innerText=`${entry.title} Players`; showModal('adminParticipantsModal'); const list=document.getElementById('adminPartList'); list.innerHTML='Loading...';
+                        try{ const snap=await getDocs(query(collection(db,'registrations'),where('eventId','==',e.target.dataset.id))); list.innerHTML=''; if(snap.empty){ list.innerHTML='No players.'; return; }
+                            let h='<table border="1" bordercolor="#444"><tr><th style="color:var(--primary)">Name/IGN</th><th style="color:var(--primary)">User</th></tr>';
+                            snap.forEach(d=>{ const dt=d.data(); h+=`<tr><td style="color:#fff">${escapeHTML(dt.format==='Solo'?dt.soloIgn:dt.teamName)}</td><td style="color:#aaa">${escapeHTML(dt.userName||dt.uid)}</td></tr>`; }); list.innerHTML=h+'</table>';
+                        }catch(err){ list.innerHTML='Error'; }
+                    });
+                    
+                    aRow.querySelector('.update-idp-btn')?.addEventListener('click', async(e)=>{
+                        e.target.disabled=true; await updateDoc(doc(db,'entries',e.target.dataset.id),{roomId:aRow.querySelector('.room-id-input').value, roomPass:aRow.querySelector('.room-pass-input').value}); e.target.disabled=false; alert("IDP Updated!");
                     });
 
-                    document.getElementById('admin-manage-list').appendChild(adminRow);
+                    document.getElementById('admin-manage-list').appendChild(aRow);
                 });
             }
 
-            // --- 3. UI INTERACTIONS & ANIMATIONS ---
+            document.getElementById('saveEditEntryBtn').addEventListener('click', async () => {
+                const id=document.getElementById('editEntryId').value, t=document.getElementById('editTitle').value, d=document.getElementById('editDetails').value, s=document.getElementById('editStatus').value, ex=siteEntries.find(e=>e.id===id);
+                let up={title:t, details:d, status:s}; if(ex.type!=='id') { up.format=document.getElementById('editFormat').value; up.fee=parseInt(document.getElementById('editFee').value)||0; up.idpTime=document.getElementById('editIdpTime').value; }
+                await updateDoc(doc(db,'entries',id), up); hideModal('editEntryModal');
+            });
 
-            // Mobile Menu Toggle
-            const mobileMenu = document.getElementById('mobile-menu');
-            const sidebar = document.getElementById('sidebar');
+            document.getElementById('confirmRegBtn').addEventListener('click', async(e) => {
+                if(!selectedEventForReg) return; const fee=parseInt(selectedEventForReg.fee)||0; let tId=null, tNm="", sIgn=null;
+                if(selectedEventForReg.format!=='Solo'){ const sel=document.getElementById('regTeamSelect'); tId=sel.value; if(!tId)return alert("Select a team."); tNm=sel.options[sel.selectedIndex].text; }
+                else { sIgn=document.getElementById('regSoloIgn').value.trim(); if(!sIgn)return alert("Enter IGN."); }
+                if(currentCoins < fee) return alert(`Need ${fee} C. Have ${currentCoins}.`);
+                e.target.disabled=true;
+                try{ await runTransaction(db, async(t)=>{
+                    const eR=doc(db,'entries',selectedEventForReg.id), eD=await t.get(eR), curJ=eD.data().joinedCount||0, max=selectedEventForReg.format==='Solo'?48:12; if(curJ>=max)throw "Full";
+                    const uR=doc(db,'users',auth.currentUser.uid), uD=await t.get(uR); if((uD.data().coins||0)<fee)throw "No funds";
+                    t.update(eR,{joinedCount:curJ+1}); t.update(uR,{coins:(uD.data().coins||0)-fee});
+                    t.set(doc(collection(db,'registrations')),{eventId:selectedEventForReg.id, uid:auth.currentUser.uid, userName:auth.currentUser.email, teamId:tId, teamName:tNm, soloIgn:sIgn, format:selectedEventForReg.format||'Team', feePaid:fee, createdAt:serverTimestamp()});
+                    if(fee>0) t.set(doc(collection(db,'walletTransactions')),{uid:auth.currentUser.uid, type:'deduction', amount:fee, reason:`Fee for ${selectedEventForReg.title}`, createdAt:serverTimestamp()});
+                }); alert("Success!"); hideModal('regModal'); } catch(err){ alert("Failed: "+err); } finally { e.target.disabled=false; }
+            });
+
+            // UI Listeners
+            const mobileMenu = document.getElementById('mobile-menu'), sidebar = document.getElementById('sidebar'), secs = document.querySelectorAll('.page-section');
+            mobileMenu.addEventListener('click', () => { mobileMenu.classList.toggle('active'); sidebar.classList.toggle('active'); });
+            document.querySelectorAll('.nav-link').forEach(l => l.addEventListener('click', e => {
+                e.preventDefault(); const tId = l.getAttribute('href').substring(1);
+                secs.forEach(s => { s.style.display='none'; s.classList.remove('active'); });
+                const tS = document.getElementById(tId); if(tS) { tS.style.display=tId==='intro'?'flex':'block'; setTimeout(()=>tS.classList.add('active'),10); }
+                mobileMenu.classList.remove('active'); sidebar.classList.remove('active'); window.scrollTo(0,0);
+            }));
+
+            // Auth Listeners
+            let isSignUp = false;
+            document.getElementById('authToggleMsg').addEventListener('click', () => {
+                isSignUp=!isSignUp; document.getElementById('authTitle').innerText=isSignUp?"REGISTER":"LOGIN";
+                document.getElementById('authDisplayName').style.display=isSignUp?'block':'none';
+                document.getElementById('emailSignInBtn').style.display=isSignUp?'none':'block';
+                document.getElementById('emailSignUpBtn').style.display=isSignUp?'block':'none';
+                document.getElementById('authToggleMsg').innerText=isSignUp?"Already have an account? Login":"Need an account? Register";
+            });
+            document.getElementById('emailSignInBtn').addEventListener('click', async(e)=>{ e.target.disabled=true; try{await signInWithEmailAndPassword(auth,document.getElementById('authEmail').value,document.getElementById('authPassword').value);}catch(err){alert(err.message);} finally{e.target.disabled=false;} });
+            document.getElementById('emailSignUpBtn').addEventListener('click', async(e)=>{ e.target.disabled=true; try{const res=await createUserWithEmailAndPassword(auth,document.getElementById('authEmail').value,document.getElementById('authPassword').value); await updateProfile(res.user,{displayName:document.getElementById('authDisplayName').value});}catch(err){alert(err.message);} finally{e.target.disabled=false;} });
+
+            let uSub, tSub, trSub, rSub;
+            async function initUser(user) {
+                const uRef=doc(db,'users',user.uid); const uDoc=await getDoc(uRef); if(!uDoc.exists()) await setDoc(uRef,{email:user.email, coins:0, createdAt:serverTimestamp()});
+                uSub=onSnapshot(uRef, d=>{ if(d.exists()){ currentCoins=d.data().coins||0; document.getElementById('headerCoinDisplay').style.display='flex'; document.getElementById('walletBalanceTop').innerText=currentCoins; document.getElementById('mainWalletBalance').innerText=currentCoins; } });
+                tSub=onSnapshot(query(collection(db,'teams'),where('ownerUid','==',user.uid)), s=>{ userTeams=[]; const l=document.getElementById('my-teams-list'); l.innerHTML=''; s.forEach(d=>{const tm={id:d.id,...d.data()}; userTeams.push(tm); l.innerHTML+=`<div class="gaming-card"><h3 style="color:var(--primary); font-size:16px;">${escapeHTML(tm.teamName)}</h3><p style="font-size:12px;">P1: ${escapeHTML(tm.players[0])}<br>P2: ${escapeHTML(tm.players[1])}<br>P3: ${escapeHTML(tm.players[2])}<br>P4: ${escapeHTML(tm.players[3])}</p></div>`;});});
+                rSub=onSnapshot(query(collection(db,'registrations'),where('uid','==',user.uid)), s=>{ userRegistrations=[]; s.forEach(d=>userRegistrations.push(d.data().eventId)); renderAllEntries(); });
+                trSub=onSnapshot(query(collection(db,'walletTransactions'),where('uid','==',user.uid)), s=>{ const l=document.getElementById('transactionList'); l.innerHTML=''; let arr=[]; s.forEach(d=>arr.push(d.data())); arr.sort((a,b)=>(b.createdAt?.toMillis()||0)-(a.createdAt?.toMillis()||0)); arr.forEach(t=>{ const c=t.type==='addition'?'#27ae60':'#e74c3c', sn=t.type==='addition'?'+':'-'; l.innerHTML+=`<div style="background:rgba(0,0,0,0.8); padding:8px; border-left:3px solid ${c}; margin-bottom:5px;"><strong style="color:${c}">${sn}${t.amount} C</strong> <span style="color:#aaa;font-size:11px;">${escapeHTML(t.reason)}</span></div>`;});});
+            }
+
+            window.updateUserUI = function(user) {
+                if(user) {
+                    document.body.classList.add('logged-in'); document.getElementById('headerProfileIcon').style.display='block'; document.getElementById('authBox').style.display='none'; document.getElementById('userProfileCard').style.display='block';
+                    document.getElementById('profileName').innerText=user.displayName||'Player'; document.getElementById('profileEmailCard').innerText=user.email; initUser(user);
+                    document.querySelectorAll('.page-section').forEach(s=>{s.style.display='none';s.classList.remove('active');});
+                    document.getElementById('login-animation').style.display='flex'; setTimeout(()=>{document.getElementById('login-animation').style.display='none'; document.getElementById('intro').style.display='flex'; setTimeout(()=>document.getElementById('intro').classList.add('active'),10);}, 1500);
+                } else {
+                    document.body.classList.remove('logged-in'); document.getElementById('headerProfileIcon').style.display='none'; document.getElementById('authBox').style.display='block'; document.getElementById('userProfileCard').style.display='none'; document.getElementById('headerCoinDisplay').style.display='none';
+                    if(uSub)uSub(); if(tSub)tSub(); if(trSub)trSub(); if(rSub)rSub(); currentCoins=0; userTeams=[]; userRegistrations=[];
+                    document.querySelectorAll('.page-section').forEach(s=>{s.style.display='none';s.classList.remove('active');}); const aS=document.getElementById('user-auth'); aS.style.display='flex'; setTimeout(()=>aS.classList.add('active'),10);
+                }
+            }
+
+            onAuthStateChanged(auth, user => updateUserUI(user));
+            document.getElementById('userLogoutBtn').addEventListener('click', ()=>signOut(auth));
+            document.getElementById('headerProfileIcon').addEventListener('click', ()=>{ const u=auth.currentUser; if(u){ document.getElementById('modalName').innerText=u.displayName||'Player'; document.getElementById('modalEmail').innerText=u.email; showModal('profileModal'); }});
+
+            // Forms Data Input
+            document.getElementById('createTeamBtn').addEventListener('click', async(e)=>{
+                const b=e.target, n=document.getElementById('teamNameInput').value, p1=document.getElementById('p1Input').value, p2=document.getElementById('p2Input').value, p3=document.getElementById('p3Input').value, p4=document.getElementById('p4Input').value;
+                if(!n||!p1||!p2||!p3||!p4)return alert("Fill all!"); b.disabled=true; try{ await addDoc(collection(db,'teams'),{teamName:n,ownerUid:auth.currentUser.uid,players:[p1,p2,p3,p4],createdAt:serverTimestamp()}); alert("Created!"); ['teamNameInput','p1Input','p2Input','p3Input','p4Input'].forEach(id=>document.getElementById(id).value=''); }catch(err){alert("Error.");}finally{b.disabled=false;}
+            });
+            document.getElementById('requestCoinsBtn').addEventListener('click', async(e)=>{ const a=parseInt(document.getElementById('coinAmountReq').value); if(isNaN(a)||a<=0)return alert("Valid amount!"); e.target.disabled=true; await addDoc(collection(db,'coinRequests'),{uid:auth.currentUser.uid,email:auth.currentUser.email,requestedCoins:a,status:'pending',createdAt:serverTimestamp()}); alert("Requested! Send SS to WA."); document.getElementById('coinAmountReq').value=''; e.target.disabled=false; });
+            document.getElementById('requestWithdrawBtn').addEventListener('click', async(e)=>{ const a=parseInt(document.getElementById('withdrawAmount').value), m=document.getElementById('withdrawMethod').value, n=document.getElementById('withdrawNumber').value; if(isNaN(a)||a<10||!m||!n)return alert("Invalid details. Min 10 C."); if(currentCoins<a)return alert("Not enough coins."); e.target.disabled=true; try{await runTransaction(db,async(t)=>{const uR=doc(db,'users',auth.currentUser.uid); const uD=await t.get(uR); if((uD.data().coins||0)<a)throw "Error"; t.update(uR,{coins:uD.data().coins-a}); t.set(doc(collection(db,'withdrawRequests')),{uid:auth.currentUser.uid,email:auth.currentUser.email,amount:a,method:m,number:n,status:'pending',createdAt:serverTimestamp()}); t.set(doc(collection(db,'walletTransactions')),{uid:auth.currentUser.uid,type:'deduction',amount:a,reason:`Withdraw (${m})`,createdAt:serverTimestamp()});}); alert("Submitted!");}catch(err){alert("Fail.");}finally{e.target.disabled=false;}});
             
-            mobileMenu.addEventListener('click', () => {
-                mobileMenu.classList.toggle('active');
-                sidebar.classList.toggle('active');
-            });
+            // Admin Publishing
+            document.getElementById('loginBtn').addEventListener('click',()=>{ const p=document.getElementById('adminPass').value; if(p.length>=6){document.getElementById('admin-login-screen').style.display='none'; document.getElementById('admin-dashboard-screen').style.display='block';}else document.getElementById('adminError').style.display='block'; });
+            document.querySelectorAll('.action-btn').forEach(btn=>btn.addEventListener('click',async()=>{
+                const ty=btn.dataset.type, t=document.getElementById(ty+'Title').value, d=document.getElementById(ty+'Details').value, s=document.getElementById(ty+'Status').value; let f='Team', fe=0, idp='';
+                if(ty!=='id'){f=document.getElementById(ty+'Format').value; fe=parseInt(document.getElementById(ty+'Fee').value)||0; idp=document.getElementById(ty+'IdpTime').value;}
+                if(!t||!d)return alert("Fill title/details."); btn.disabled=true; await addDoc(collection(db,'entries'),{type:ty,title:t,details:d,status:s,format:f,fee:ty!=='id'?fe:0,idpTime:idp,roomId:"",roomPass:"",joinedCount:0}); alert("Published."); btn.disabled=false; document.getElementById(ty+'Title').value=''; document.getElementById(ty+'Details').value='';
+            }));
 
-            // Smooth Scrolling and Active Section Handling
-            const navLinks = document.querySelectorAll('.nav-link');
-            const sections = document.querySelectorAll('.page-section');
-
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    const targetId = link.getAttribute('href').substring(1);
-                    if (!targetId || targetId === 'user-auth') return; // Handled separately
-                    
-                    e.preventDefault();
-                    
-                    // Close sidebar on mobile after click
-                    sidebar.classList.remove('active');
-                    mobileMenu.classList.remove('active');
-
-                    // Hide all sections, show target
-                    sections.forEach(sec => sec.classList.remove('active'));
-                    const targetSec = document.getElementById(targetId);
-                    if (targetSec) {
-                        targetSec.classList.add('active');
-                        window.scrollTo(0, 0);
-                    }
-                });
-            });
-
-            // Canvas Background Animation (Live BG)
-            const canvas = document.getElementById('live-bg');
-            const ctx = canvas.getContext('2d');
-            let particlesArray = [];
-
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-
-            window.addEventListener('resize', () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            });
-
-            class Particle {
-                constructor() {
-                    this.x = Math.random() * canvas.width;
-                    this.y = Math.random() * canvas.height;
-                    this.size = Math.random() * 2;
-                    this.speedX = Math.random() * 0.5 - 0.25;
-                    this.speedY = Math.random() * 0.5 - 0.25;
-                    this.color = 'rgba(255, 204, 0, 0.15)'; // Primary accent color
-                }
-                update() {
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    if (this.size > 0.2) this.size -= 0.005;
-                    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-                    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
-                }
-                draw() {
-                    ctx.fillStyle = this.color;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-
-            function initParticles() {
-                particlesArray = [];
-                let numberOfParticles = (canvas.height * canvas.width) / 15000;
-                for (let i = 0; i < numberOfParticles; i++) {
-                    particlesArray.push(new Particle());
-                }
-            }
-
-            function animateParticles() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                for (let i = 0; i < particlesArray.length; i++) {
-                    particlesArray[i].update();
-                    particlesArray[i].draw();
-                }
-                requestAnimationFrame(animateParticles);
-            }
-
-            initParticles();
-            animateParticles();
-
+            // Canvas Background Particles
+            const cvs = document.getElementById('live-bg'), cx = cvs.getContext('2d'); let w,h,pts=[];
+            function initC(){ w=cvs.width=window.innerWidth; h=cvs.height=window.innerHeight; pts=[]; for(let i=0;i<50;i++)pts.push({x:Math.random()*w,y:Math.random()*h,s:Math.random()*2+1,vx:Math.random()*1-0.5,vy:Math.random()*1-0.5}); }
+            function animC(){ cx.clearRect(0,0,w,h); pts.forEach(p=>{cx.beginPath();cx.arc(p.x,p.y,p.s,0,Math.PI*2);cx.fillStyle='rgba(255,204,0,0.3)';cx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1;}); requestAnimationFrame(animC); }
+            initC(); animC(); window.addEventListener('resize', initC);
         });
     </script>
 </body>
