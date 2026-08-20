@@ -319,6 +319,8 @@
                         <option value="CS 4v4">Format: CS 4v4 (2 Slots)</option>
                         <option value="Craftland M590 Solo">Format: Craftland M590 Solo (6 Slots)</option>
                         <option value="Craftland M590 Duo">Format: Craftland M590 Duo (6 Slots)</option>
+                        <option value="Lone Wolf 1v1">Format: Lone Wolf 1v1 (2 Slots)</option>
+                        <option value="Lone Wolf 2v2">Format: Lone Wolf 2v2 (2 Slots)</option>
                     </select>
                     <label style="color:var(--primary); display:block; margin-bottom:5px; font-size:var(--font-sm); font-weight:bold;">Fee:</label>
                     <input type="number" id="editFee">
@@ -330,6 +332,7 @@
                     <option value="Upcoming">Upcoming</option>
                     <option value="On Going">On Going</option>
                     <option value="Completed">Completed</option>
+                    <option value="Ended">Ended</option>
                     <option value="Available">Available</option>
                     <option value="Sold">Sold Out</option>
                 </select>
@@ -540,10 +543,12 @@
                             <option value="CS 4v4">CS 4v4 (2 Slots)</option>
                             <option value="Craftland M590 Solo">Craftland M590 Solo (6 Slots)</option>
                             <option value="Craftland M590 Duo">Craftland M590 Duo (6 Slots)</option>
+                            <option value="Lone Wolf 1v1">Lone Wolf 1v1 (2 Slots)</option>
+                            <option value="Lone Wolf 2v2">Lone Wolf 2v2 (2 Slots)</option>
                         </select>
                         <input type="number" id="scrimFee" placeholder="Fee (0 for Free)">
                         <input type="text" id="scrimIdpTime" placeholder="IDP Time">
-                        <select id="scrimStatus"><option value="Upcoming">Upcoming</option><option value="On Going">On Going</option><option value="Completed">Completed</option></select>
+                        <select id="scrimStatus"><option value="Upcoming">Upcoming</option><option value="On Going">On Going</option><option value="Completed">Completed</option><option value="Ended">Ended</option></select>
                         <button class="action-btn" data-type="scrim">PUBLISH</button>
                     </div>
 
@@ -560,10 +565,12 @@
                             <option value="CS 4v4">CS 4v4 (2 Slots)</option>
                             <option value="Craftland M590 Solo">Craftland M590 Solo (6 Slots)</option>
                             <option value="Craftland M590 Duo">Craftland M590 Duo (6 Slots)</option>
+                            <option value="Lone Wolf 1v1">Lone Wolf 1v1 (2 Slots)</option>
+                            <option value="Lone Wolf 2v2">Lone Wolf 2v2 (2 Slots)</option>
                         </select>
                         <input type="number" id="tourFee" placeholder="Fee (0 for Free)">
                         <input type="text" id="tourIdpTime" placeholder="IDP Time">
-                        <select id="tourStatus"><option value="Upcoming">Upcoming</option><option value="On Going">On Going</option><option value="Completed">Completed</option></select>
+                        <select id="tourStatus"><option value="Upcoming">Upcoming</option><option value="On Going">On Going</option><option value="Completed">Completed</option><option value="Ended">Ended</option></select>
                         <button class="action-btn" data-type="tour">PUBLISH</button>
                     </div>
 
@@ -668,7 +675,7 @@
                     // Dynamic Maximum Slots Configuration based on Game Mode
                     let maxSlots = 12; // Default Team
                     if (entry.format === 'Solo') maxSlots = 48;
-                    else if (entry.format?.startsWith('CS')) maxSlots = 2; // All CS formats get 2 Slots
+                    else if (entry.format?.startsWith('CS') || entry.format?.startsWith('Lone Wolf')) maxSlots = 2; // All CS & Lone Wolf formats get 2 Slots
                     else if (entry.format?.startsWith('Craftland')) maxSlots = 6; // All Craftland formats get 6 Slots
                     
                     const currentJoined = entry.joinedCount || 0, isFull = currentJoined >= maxSlots;
@@ -677,40 +684,56 @@
                     let timeHtml = (!isId && entry.idpTime) ? `<div style="color:#25D366; font-size:12px; font-weight:bold; margin-bottom:8px;">🕒 IDP: ${escapeHTML(entry.idpTime)}</div>` : '';
                     let formatSlots = !isId ? `<div style="font-size:12px; color:#aaa; margin-bottom:8px;">${escapeHTML(entry.format||'Team')} | Slots: <span style="color:${isFull?'#e74c3c':'#27ae60'}">${currentJoined}/${maxSlots}</span></div>` : '';
                     let feeText = isId ? '' : `<div class="fee-badge">Fee: ${(!entry.fee||entry.fee==0)?'FREE':entry.fee+' C'}</div>`;
+                    
                     let btnText = isId ? 'BUY' : (hasJoined ? 'GET IDP' : (isFull ? 'FULL' : 'JOIN'));
                     let dis = (isFull && !hasJoined && !isId) ? 'disabled style="background:#444; color:#888;"' : '';
 
-                    newCard.innerHTML = `<span class="badge ${bgClass}">${escapeHTML(entry.status)}</span><h3>${escapeHTML(entry.title)}</h3>${formatSlots}${timeHtml}${feeText}<p>${escapeHTML(entry.details)}</p><button class="action-card-btn ${hasJoined?'btn-get-idp':''}" data-id="${entry.id}" ${dis}>${btnText}</button>${isId ? `<div class="contact-info-box"><div class="number">${globalWhatsAppNumber}</div><a href="https://wa.me/923371651720" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> Chat</a></div>`:''}`;
+                    // Construct Standard Action Button
+                    let actionBtnHtml = `<button class="action-card-btn ${hasJoined?'btn-get-idp':''}" data-id="${entry.id}" ${dis}>${btnText}</button>`;
 
-                    newCard.querySelector('.action-card-btn').addEventListener('click', (e) => {
-                        if(isId){ const cb = newCard.querySelector('.contact-info-box'); cb.style.display=cb.style.display==='block'?'none':'block'; e.target.innerText=cb.style.display==='block'?'CLOSE':'BUY'; }
-                        else {
-                            if(!auth.currentUser) return alert("Login required!");
-                            if(hasJoined){ 
-                                if(entry.roomId){ document.getElementById('displayRoomId').innerText=entry.roomId; document.getElementById('displayRoomPass').innerText=entry.roomPass; showModal('idpModal'); }
-                                else alert(`IDP will be given at: ${entry.idpTime||'shortly'}`);
-                            } else {
-                                if(entry.status!=='Upcoming'&&entry.status!=='Available') return alert("Closed.");
-                                if(isFull) return alert("Full!");
-                                selectedEventForReg = entry; document.getElementById('regModalTitle').innerText=`JOIN ${entry.title}`;
-                                document.getElementById('regModalDetails').innerHTML=`Fee: <strong style="color:var(--primary);">${(!entry.fee||entry.fee==0)?'Free':entry.fee+' C'}</strong>`;
-                                
-                                // Determine UI structure (Solo Box vs Team Select Dropdown)
-                                const isSoloFormat = ['Solo', 'CS 1v1', 'Craftland M590 Solo'].includes(entry.format);
-                                document.getElementById('teamSelectContainer').style.display = !isSoloFormat ? 'block' : 'none';
-                                document.getElementById('soloIgnContainer').style.display = isSoloFormat ? 'block' : 'none';
-                                
-                                if(!isSoloFormat){ const sel = document.getElementById('regTeamSelect'); sel.innerHTML=''; userTeams.forEach(t=>sel.innerHTML+=`<option value="${t.id}">${escapeHTML(t.teamName)}</option>`); }
-                                showModal('regModal');
+                    // Check for Ended Tournament logic
+                    if (entry.type === 'tour' && entry.status === 'Ended') {
+                        actionBtnHtml = `<a href="https://wa.me/923371651720" target="_blank" class="action-card-btn" style="background:#25D366; color:#fff; text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:10px; font-family:'Montserrat', sans-serif;">
+                            <span style="font-weight:bold; font-size:14px;"><i class="fa-brands fa-whatsapp"></i> +92 337 1651720</span>
+                            <span style="font-size:11px; text-transform:none; font-weight:normal;">Send SS of matches with proof</span>
+                        </a>`;
+                    }
+
+                    newCard.innerHTML = `<span class="badge ${bgClass}">${escapeHTML(entry.status)}</span><h3>${escapeHTML(entry.title)}</h3>${formatSlots}${timeHtml}${feeText}<p>${escapeHTML(entry.details)}</p>${actionBtnHtml}${isId ? `<div class="contact-info-box"><div class="number">${globalWhatsAppNumber}</div><a href="https://wa.me/923371651720" class="wa-btn"><i class="fa-brands fa-whatsapp"></i> Chat</a></div>`:''}`;
+
+                    // Attach click handler only to standard buttons (not the WhatsApp <a> link for Ended tours)
+                    const actionBtnElement = newCard.querySelector('button.action-card-btn');
+                    if(actionBtnElement) {
+                        actionBtnElement.addEventListener('click', (e) => {
+                            if(isId){ const cb = newCard.querySelector('.contact-info-box'); cb.style.display=cb.style.display==='block'?'none':'block'; e.target.innerText=cb.style.display==='block'?'CLOSE':'BUY'; }
+                            else {
+                                if(!auth.currentUser) return alert("Login required!");
+                                if(hasJoined){ 
+                                    if(entry.roomId){ document.getElementById('displayRoomId').innerText=entry.roomId; document.getElementById('displayRoomPass').innerText=entry.roomPass; showModal('idpModal'); }
+                                    else alert(`IDP will be given at: ${entry.idpTime||'shortly'}`);
+                                } else {
+                                    if(entry.status!=='Upcoming'&&entry.status!=='Available') return alert("Closed.");
+                                    if(isFull) return alert("Full!");
+                                    selectedEventForReg = entry; document.getElementById('regModalTitle').innerText=`JOIN ${entry.title}`;
+                                    document.getElementById('regModalDetails').innerHTML=`Fee: <strong style="color:var(--primary);">${(!entry.fee||entry.fee==0)?'Free':entry.fee+' C'}</strong>`;
+                                    
+                                    // Determine UI structure (Solo Box vs Team Select Dropdown)
+                                    const isSoloFormat = ['Solo', 'CS 1v1', 'Craftland M590 Solo', 'Lone Wolf 1v1'].includes(entry.format);
+                                    document.getElementById('teamSelectContainer').style.display = !isSoloFormat ? 'block' : 'none';
+                                    document.getElementById('soloIgnContainer').style.display = isSoloFormat ? 'block' : 'none';
+                                    
+                                    if(!isSoloFormat){ const sel = document.getElementById('regTeamSelect'); sel.innerHTML=''; userTeams.forEach(t=>sel.innerHTML+=`<option value="${t.id}">${escapeHTML(t.teamName)}</option>`); }
+                                    showModal('regModal');
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
 
                     if(entry.type==='scrim') document.getElementById('scrims-list').appendChild(newCard); else if(entry.type==='tour') document.getElementById('tours-list').appendChild(newCard); else if(entry.type==='id') document.getElementById('ids-list').appendChild(newCard);
 
                     // Admin Rows
                     const aRow = document.createElement('div'); aRow.classList.add('list-item-row');
-                    let optH = isId ? `<option value="Available" ${entry.status==='Available'?'selected':''}>Avail</option><option value="Sold" ${entry.status==='Sold'?'selected':''}>Sold</option>` : `<option value="Upcoming" ${entry.status==='Upcoming'?'selected':''}>Upcoming</option><option value="Completed" ${entry.status==='Completed'?'selected':''}>Completed</option><option value="On Going" ${entry.status==='On Going'?'selected':''}>On Going</option>`;
+                    let optH = isId ? `<option value="Available" ${entry.status==='Available'?'selected':''}>Avail</option><option value="Sold" ${entry.status==='Sold'?'selected':''}>Sold</option>` : `<option value="Upcoming" ${entry.status==='Upcoming'?'selected':''}>Upcoming</option><option value="Completed" ${entry.status==='Completed'?'selected':''}>Completed</option><option value="On Going" ${entry.status==='On Going'?'selected':''}>On Going</option><option value="Ended" ${entry.status==='Ended'?'selected':''}>Ended</option>`;
                     let idpH = !isId ? `<div class="idp-controls"><input type="text" class="room-id-input" placeholder="Room ID" value="${escapeHTML(entry.roomId||'')}"><input type="text" class="room-pass-input" placeholder="Pass" value="${escapeHTML(entry.roomPass||'')}"><button class="btn-success update-idp-btn" data-id="${entry.id}">Set IDP</button><button class="btn-primary view-participants-btn" data-id="${entry.id}">Players</button></div>` : '';
                     
                     aRow.innerHTML = `<div class="row-header-actions"><div><strong style="color:var(--primary);font-size:14px;">[${entry.type.toUpperCase()}] ${escapeHTML(entry.title)}</strong></div><div class="row-actions"><select class="status-select" data-id="${entry.id}">${optH}</select><button class="btn-warning edit-entry-btn" data-id="${entry.id}">Ed</button><button class="btn-danger delete-db-btn" data-id="${entry.id}">Del</button></div></div>${idpH}`;
@@ -726,11 +749,11 @@
                     aRow.querySelector('.view-participants-btn')?.addEventListener('click', async(e)=>{
                         document.getElementById('adminPartTitle').innerText=`${entry.title} Players`; showModal('adminParticipantsModal'); const list=document.getElementById('adminPartList'); list.innerHTML='Loading...';
                         try{ const snap=await getDocs(query(collection(db,'registrations'),where('eventId','==',e.target.dataset.id))); list.innerHTML=''; if(snap.empty){ list.innerHTML='No players.'; return; }
-                            let h='<table border="1" bordercolor="#444"><tr><th style="color:var(--primary)">Name/IGN</th><th style="color:var(--primary)">User</th></tr>';
+                            let h='<table border="1" bordercolor="#444"><tr><th style="color:var(--primary)">Name/IGN</th><th style="color:var(--primary)">Gmail / Email</th></tr>';
                             snap.forEach(d=>{ 
                                 const dt=d.data(); 
-                                const isSoloFmt = ['Solo', 'CS 1v1', 'Craftland M590 Solo'].includes(dt.format);
-                                h+=`<tr><td style="color:#fff">${escapeHTML(isSoloFmt ? dt.soloIgn : dt.teamName)}</td><td style="color:#aaa">${escapeHTML(dt.userName||dt.uid)}</td></tr>`; 
+                                const isSoloFmt = ['Solo', 'CS 1v1', 'Craftland M590 Solo', 'Lone Wolf 1v1'].includes(dt.format);
+                                h+=`<tr><td style="color:#fff">${escapeHTML(isSoloFmt ? dt.soloIgn : dt.teamName)}</td><td style="color:#25D366; font-size:12px; font-weight:bold;">${escapeHTML(dt.userName||dt.email||dt.uid)}</td></tr>`; 
                             }); 
                             list.innerHTML=h+'</table>';
                         }catch(err){ list.innerHTML='Error'; }
@@ -753,7 +776,7 @@
             document.getElementById('confirmRegBtn').addEventListener('click', async(e) => {
                 if(!selectedEventForReg) return; const fee=parseInt(selectedEventForReg.fee)||0; let tId=null, tNm="", sIgn=null;
                 
-                const isSoloReg = ['Solo', 'CS 1v1', 'Craftland M590 Solo'].includes(selectedEventForReg.format);
+                const isSoloReg = ['Solo', 'CS 1v1', 'Craftland M590 Solo', 'Lone Wolf 1v1'].includes(selectedEventForReg.format);
                 if(!isSoloReg){ const sel=document.getElementById('regTeamSelect'); tId=sel.value; if(!tId)return alert("Select a team."); tNm=sel.options[sel.selectedIndex].text; }
                 else { sIgn=document.getElementById('regSoloIgn').value.trim(); if(!sIgn)return alert("Enter IGN."); }
                 
@@ -765,7 +788,7 @@
                     
                     let max = 12;
                     if(selectedEventForReg.format === 'Solo') max = 48;
-                    else if(selectedEventForReg.format?.startsWith('CS')) max = 2;
+                    else if(selectedEventForReg.format?.startsWith('CS') || selectedEventForReg.format?.startsWith('Lone Wolf')) max = 2;
                     else if(selectedEventForReg.format?.startsWith('Craftland')) max = 6;
                     
                     if(curJ>=max)throw "Full";
