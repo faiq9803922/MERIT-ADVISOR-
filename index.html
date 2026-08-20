@@ -310,7 +310,16 @@
                 <textarea id="editDetails" rows="3"></textarea>
                 <div id="editNonIdFields">
                     <label style="color:var(--primary); display:block; margin-bottom:5px; font-size:var(--font-sm); font-weight:bold;">Format:</label>
-                    <select id="editFormat"><option value="Team">Format: Team (12 Slots)</option><option value="Solo">Format: Solo (48 Slots)</option></select>
+                    <select id="editFormat">
+                        <option value="Team">Format: Team (12 Slots)</option>
+                        <option value="Solo">Format: Solo (48 Slots)</option>
+                        <option value="CS 1v1">Format: CS 1v1 (2 Slots)</option>
+                        <option value="CS 2v2">Format: CS 2v2 (2 Slots)</option>
+                        <option value="CS 3v3">Format: CS 3v3 (2 Slots)</option>
+                        <option value="CS 4v4">Format: CS 4v4 (2 Slots)</option>
+                        <option value="Craftland M590 Solo">Format: Craftland M590 Solo (6 Slots)</option>
+                        <option value="Craftland M590 Duo">Format: Craftland M590 Duo (6 Slots)</option>
+                    </select>
                     <label style="color:var(--primary); display:block; margin-bottom:5px; font-size:var(--font-sm); font-weight:bold;">Fee:</label>
                     <input type="number" id="editFee">
                     <label style="color:var(--primary); display:block; margin-bottom:5px; font-size:var(--font-sm); font-weight:bold;">IDP Time:</label>
@@ -522,7 +531,16 @@
                         <h4>Add Scrim</h4>
                         <input type="text" id="scrimTitle" placeholder="Title">
                         <textarea id="scrimDetails" placeholder="Details" rows="2"></textarea>
-                        <select id="scrimFormat"><option value="Team">Team (12 Slots)</option><option value="Solo">Solo (48 Slots)</option></select>
+                        <select id="scrimFormat">
+                            <option value="Team">Team (12 Slots)</option>
+                            <option value="Solo">Solo (48 Slots)</option>
+                            <option value="CS 1v1">CS 1v1 (2 Slots)</option>
+                            <option value="CS 2v2">CS 2v2 (2 Slots)</option>
+                            <option value="CS 3v3">CS 3v3 (2 Slots)</option>
+                            <option value="CS 4v4">CS 4v4 (2 Slots)</option>
+                            <option value="Craftland M590 Solo">Craftland M590 Solo (6 Slots)</option>
+                            <option value="Craftland M590 Duo">Craftland M590 Duo (6 Slots)</option>
+                        </select>
                         <input type="number" id="scrimFee" placeholder="Fee (0 for Free)">
                         <input type="text" id="scrimIdpTime" placeholder="IDP Time">
                         <select id="scrimStatus"><option value="Upcoming">Upcoming</option><option value="On Going">On Going</option><option value="Completed">Completed</option></select>
@@ -533,7 +551,16 @@
                         <h4>Add Tour</h4>
                         <input type="text" id="tourTitle" placeholder="Title">
                         <textarea id="tourDetails" placeholder="Details" rows="2"></textarea>
-                        <select id="tourFormat"><option value="Team">Team (12 Slots)</option><option value="Solo">Solo (48 Slots)</option></select>
+                        <select id="tourFormat">
+                            <option value="Team">Team (12 Slots)</option>
+                            <option value="Solo">Solo (48 Slots)</option>
+                            <option value="CS 1v1">CS 1v1 (2 Slots)</option>
+                            <option value="CS 2v2">CS 2v2 (2 Slots)</option>
+                            <option value="CS 3v3">CS 3v3 (2 Slots)</option>
+                            <option value="CS 4v4">CS 4v4 (2 Slots)</option>
+                            <option value="Craftland M590 Solo">Craftland M590 Solo (6 Slots)</option>
+                            <option value="Craftland M590 Duo">Craftland M590 Duo (6 Slots)</option>
+                        </select>
                         <input type="number" id="tourFee" placeholder="Fee (0 for Free)">
                         <input type="text" id="tourIdpTime" placeholder="IDP Time">
                         <select id="tourStatus"><option value="Upcoming">Upcoming</option><option value="On Going">On Going</option><option value="Completed">Completed</option></select>
@@ -572,7 +599,7 @@
         <p style="margin-top:5px;"><a href="#" id="openTermsLink">Terms & Privacy</a></p>
     </footer>
 
-    <!-- FIREBASE SCRIPT (Logic remains unchanged, securely hooked) -->
+    <!-- FIREBASE SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -609,7 +636,6 @@
                     row.innerHTML = `<div class="row-header-actions"><div><strong style="font-size:14px;">${escapeHTML(req.gmail || req.email)}</strong> - <strong style="color:var(--primary);">${escapeHTML(req.requestedCoins)} C</strong></div><div class="row-actions"><button class="btn-success approve-coin-btn" data-id="${req.id}" data-uid="${req.uid}" data-coins="${req.requestedCoins}">✓</button><button class="btn-danger reject-coin-btn" data-id="${req.id}">X</button></div></div>`;
                     list.appendChild(row);
                 });
-                // Event bindings for buttons... (same logic as before)
                 document.querySelectorAll('.approve-coin-btn').forEach(btn => btn.addEventListener('click', async (e) => {
                     const el=e.target; el.disabled=true;
                     try{ await runTransaction(db, async(t)=>{
@@ -638,7 +664,14 @@
                 ['scrims-list','tours-list','ids-list','admin-manage-list'].forEach(id => document.getElementById(id).innerHTML='');
                 siteEntries.forEach(entry => {
                     const bgClass = 'bg-' + escapeHTML(entry.status || '').toLowerCase().replace(' ', ''), isId = entry.type === 'id', hasJoined = userRegistrations.includes(entry.id);
-                    const maxSlots = entry.format === 'Solo' ? 48 : 12, currentJoined = entry.joinedCount || 0, isFull = currentJoined >= maxSlots;
+                    
+                    // Dynamic Maximum Slots Configuration based on Game Mode
+                    let maxSlots = 12; // Default Team
+                    if (entry.format === 'Solo') maxSlots = 48;
+                    else if (entry.format?.startsWith('CS')) maxSlots = 2; // All CS formats get 2 Slots
+                    else if (entry.format?.startsWith('Craftland')) maxSlots = 6; // All Craftland formats get 6 Slots
+                    
+                    const currentJoined = entry.joinedCount || 0, isFull = currentJoined >= maxSlots;
                     
                     const newCard = document.createElement('div'); newCard.classList.add('gaming-card');
                     let timeHtml = (!isId && entry.idpTime) ? `<div style="color:#25D366; font-size:12px; font-weight:bold; margin-bottom:8px;">🕒 IDP: ${escapeHTML(entry.idpTime)}</div>` : '';
@@ -661,9 +694,13 @@
                                 if(isFull) return alert("Full!");
                                 selectedEventForReg = entry; document.getElementById('regModalTitle').innerText=`JOIN ${entry.title}`;
                                 document.getElementById('regModalDetails').innerHTML=`Fee: <strong style="color:var(--primary);">${(!entry.fee||entry.fee==0)?'Free':entry.fee+' C'}</strong>`;
-                                document.getElementById('teamSelectContainer').style.display = entry.format!=='Solo'?'block':'none';
-                                document.getElementById('soloIgnContainer').style.display = entry.format==='Solo'?'block':'none';
-                                if(entry.format!=='Solo'){ const sel = document.getElementById('regTeamSelect'); sel.innerHTML=''; userTeams.forEach(t=>sel.innerHTML+=`<option value="${t.id}">${escapeHTML(t.teamName)}</option>`); }
+                                
+                                // Determine UI structure (Solo Box vs Team Select Dropdown)
+                                const isSoloFormat = ['Solo', 'CS 1v1', 'Craftland M590 Solo'].includes(entry.format);
+                                document.getElementById('teamSelectContainer').style.display = !isSoloFormat ? 'block' : 'none';
+                                document.getElementById('soloIgnContainer').style.display = isSoloFormat ? 'block' : 'none';
+                                
+                                if(!isSoloFormat){ const sel = document.getElementById('regTeamSelect'); sel.innerHTML=''; userTeams.forEach(t=>sel.innerHTML+=`<option value="${t.id}">${escapeHTML(t.teamName)}</option>`); }
                                 showModal('regModal');
                             }
                         }
@@ -690,7 +727,12 @@
                         document.getElementById('adminPartTitle').innerText=`${entry.title} Players`; showModal('adminParticipantsModal'); const list=document.getElementById('adminPartList'); list.innerHTML='Loading...';
                         try{ const snap=await getDocs(query(collection(db,'registrations'),where('eventId','==',e.target.dataset.id))); list.innerHTML=''; if(snap.empty){ list.innerHTML='No players.'; return; }
                             let h='<table border="1" bordercolor="#444"><tr><th style="color:var(--primary)">Name/IGN</th><th style="color:var(--primary)">User</th></tr>';
-                            snap.forEach(d=>{ const dt=d.data(); h+=`<tr><td style="color:#fff">${escapeHTML(dt.format==='Solo'?dt.soloIgn:dt.teamName)}</td><td style="color:#aaa">${escapeHTML(dt.userName||dt.uid)}</td></tr>`; }); list.innerHTML=h+'</table>';
+                            snap.forEach(d=>{ 
+                                const dt=d.data(); 
+                                const isSoloFmt = ['Solo', 'CS 1v1', 'Craftland M590 Solo'].includes(dt.format);
+                                h+=`<tr><td style="color:#fff">${escapeHTML(isSoloFmt ? dt.soloIgn : dt.teamName)}</td><td style="color:#aaa">${escapeHTML(dt.userName||dt.uid)}</td></tr>`; 
+                            }); 
+                            list.innerHTML=h+'</table>';
                         }catch(err){ list.innerHTML='Error'; }
                     });
                     
@@ -710,12 +752,24 @@
 
             document.getElementById('confirmRegBtn').addEventListener('click', async(e) => {
                 if(!selectedEventForReg) return; const fee=parseInt(selectedEventForReg.fee)||0; let tId=null, tNm="", sIgn=null;
-                if(selectedEventForReg.format!=='Solo'){ const sel=document.getElementById('regTeamSelect'); tId=sel.value; if(!tId)return alert("Select a team."); tNm=sel.options[sel.selectedIndex].text; }
+                
+                const isSoloReg = ['Solo', 'CS 1v1', 'Craftland M590 Solo'].includes(selectedEventForReg.format);
+                if(!isSoloReg){ const sel=document.getElementById('regTeamSelect'); tId=sel.value; if(!tId)return alert("Select a team."); tNm=sel.options[sel.selectedIndex].text; }
                 else { sIgn=document.getElementById('regSoloIgn').value.trim(); if(!sIgn)return alert("Enter IGN."); }
+                
                 if(currentCoins < fee) return alert(`Need ${fee} C. Have ${currentCoins}.`);
                 e.target.disabled=true;
+                
                 try{ await runTransaction(db, async(t)=>{
-                    const eR=doc(db,'entries',selectedEventForReg.id), eD=await t.get(eR), curJ=eD.data().joinedCount||0, max=selectedEventForReg.format==='Solo'?48:12; if(curJ>=max)throw "Full";
+                    const eR=doc(db,'entries',selectedEventForReg.id), eD=await t.get(eR), curJ=eD.data().joinedCount||0;
+                    
+                    let max = 12;
+                    if(selectedEventForReg.format === 'Solo') max = 48;
+                    else if(selectedEventForReg.format?.startsWith('CS')) max = 2;
+                    else if(selectedEventForReg.format?.startsWith('Craftland')) max = 6;
+                    
+                    if(curJ>=max)throw "Full";
+                    
                     const uR=doc(db,'users',auth.currentUser.uid), uD=await t.get(uR); if((uD.data().coins||0)<fee)throw "No funds";
                     t.update(eR,{joinedCount:curJ+1}); t.update(uR,{coins:(uD.data().coins||0)-fee});
                     t.set(doc(collection(db,'registrations')),{eventId:selectedEventForReg.id, uid:auth.currentUser.uid, userName:auth.currentUser.email, teamId:tId, teamName:tNm, soloIgn:sIgn, format:selectedEventForReg.format||'Team', feePaid:fee, createdAt:serverTimestamp()});
