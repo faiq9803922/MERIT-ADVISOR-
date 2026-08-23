@@ -410,12 +410,12 @@
                 <div id="depositSection" style="display:none; text-align:left; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 6px;">
                     <div style="border-left:4px solid var(--primary); padding-left: 10px; margin-bottom:15px; font-size:var(--font-sm);">
                         <p style="color:var(--primary); font-weight:bold;">Payment Info (JAZZCASH)</p>
-                        <p>03269277193 (BIBI FATIMA)</p>
+                        <p id="depositNumberDisplay">03269277193 (BIBI FATIMA)</p>
                         <p style="color:#e74c3c; font-size: 11px; margin-top: 5px; font-weight: bold;">AFTER PAYMENT SCREENSHOT MUST</p>
                     </div>
                     <input type="number" id="coinAmountReq" placeholder="Coins to buy" min="1">
                     <button id="requestCoinsBtn" style="margin-bottom:10px; font-size:var(--font-md);">1. REQUEST</button>
-                    <a href="https://wa.me/923269277193" target="_blank" class="start-btn" style="width:100%; padding:10px; background:#25D366; color:#fff; font-size:var(--font-md); text-align:center; display:block;">
+                    <a id="depositWaBtn" href="https://wa.me/923269277193" target="_blank" class="start-btn" style="width:100%; padding:10px; background:#25D366; color:#fff; font-size:var(--font-md); text-align:center; display:block;">
                         <i class="fa-brands fa-whatsapp"></i> 2. SEND SCREENSHOT
                     </a>
                 </div>
@@ -437,7 +437,7 @@
             <div class="custom-form-box" style="text-align: center;">
                 <h3 style="font-family: 'Bebas Neue', sans-serif;">CUSTOMER SUPPORT</h3>
                 <p style="font-size: var(--font-sm); color: #ccc; margin-bottom: 10px;">Need help? We're available 24/7 on WhatsApp.</p>
-                <a href="https://wa.me/923269277193" target="_blank" class="start-btn" style="background: #25D366; color:#fff; width: 100%; font-size:var(--font-md);"><i class="fa-brands fa-whatsapp"></i> CHAT NOW</a>
+                <a id="supportWaBtn" href="https://wa.me/923269277193" target="_blank" class="start-btn" style="background: #25D366; color:#fff; width: 100%; font-size:var(--font-md);"><i class="fa-brands fa-whatsapp"></i> CHAT NOW</a>
             </div>
 
             <!-- Admin Button Hidden by Default -->
@@ -450,7 +450,23 @@
             <h2 class="sec-title">Admin Dashboard</h2>
             <div class="admin-dashboard" id="admin-dashboard-screen" style="display:block;">
                 
-                <!-- NEW: Separate Admin System to Send Coins via Gmail (For Tournament Winners / Rewards) -->
+                <!-- System Contact Settings -->
+                <div class="custom-form-box" style="border: 2px solid var(--primary); margin-bottom: 20px;">
+                    <h3 style="color: var(--primary);"><i class="fa-solid fa-gear"></i> System Contact Settings</h3>
+                    <p style="color:#aaa; font-size:var(--font-sm); margin-bottom:10px;">Update deposit info and WhatsApp numbers in real time across the application.</p>
+                    <label style="color:var(--primary); font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Deposit Info Displayed To Users:</label>
+                    <input type="text" id="adminDepositInfoInput" placeholder="e.g. 03269277193 (BIBI FATIMA)">
+                    
+                    <label style="color:var(--primary); font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Deposit WhatsApp Number (Digits only with country code):</label>
+                    <input type="text" id="adminDepositWaInput" placeholder="e.g. 923269277193">
+
+                    <label style="color:var(--primary); font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Customer Support WhatsApp Number (Digits only with country code):</label>
+                    <input type="text" id="adminSupportWaInput" placeholder="e.g. 923269277193">
+
+                    <button id="saveSystemSettingsBtn" style="background: var(--primary);">SAVE CONTACT SETTINGS</button>
+                </div>
+
+                <!-- Admin System to Send Coins via Gmail -->
                 <div class="custom-form-box" style="border: 2px solid #27ae60; margin-bottom: 20px;">
                     <h3 style="color: #27ae60;"><i class="fa-solid fa-paper-plane"></i> Send Coins to Player (Gmail System)</h3>
                     <p style="color:#aaa; font-size:var(--font-sm); margin-bottom:10px;">Use this system to reward tournament winners directly.</p>
@@ -497,7 +513,7 @@
                         <option value="Completed">Completed</option>
                         <option value="Ended">Ended</option>
                     </select>
-                    <button class="action-btn" data-type="scrim">PUBLISH</button>
+                    <button id="publishMatchBtn" class="action-btn" data-type="scrim">PUBLISH</button>
                 </div>
 
                 <div class="custom-form-box" style="margin-bottom: 20px;">
@@ -540,14 +556,15 @@
         const db = getFirestore(app);
 
         function escapeHTML(str) { return str ? String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[m])) : ''; }
+        function cleanPhone(num) { return num ? String(num).replace(/[^0-9]/g, '') : ''; }
 
         let siteEntries = [], userTeams = [], userRegistrations = [], currentCoins = 0, selectedEventForReg = null;
         let currentMatchFilter = 'ALL';
 
         document.addEventListener('DOMContentLoaded', () => {
 
-            function showModal(modalId) { const m = document.getElementById(modalId); m.style.display='flex'; void m.offsetWidth; m.classList.add('active'); }
-            function hideModal(modalId) { const m = document.getElementById(modalId); m.classList.remove('active'); setTimeout(() => m.style.display='none', 300); }
+            function showModal(modalId) { const m = document.getElementById(modalId); if(!m) return; m.style.display='flex'; void m.offsetWidth; m.classList.add('active'); }
+            function hideModal(modalId) { const m = document.getElementById(modalId); if(!m) return; m.classList.remove('active'); setTimeout(() => m.style.display='none', 300); }
 
             ['closeRegModal','closeIdpModal','closeAdminParticipantsModal'].forEach(id => {
                 document.getElementById(id)?.addEventListener('click', () => hideModal(id.replace('close','').charAt(0).toLowerCase() + id.replace('close','').slice(1)));
@@ -587,15 +604,71 @@
             document.getElementById('showDepositBtn').addEventListener('click', () => { document.getElementById('depositSection').style.display='block'; document.getElementById('withdrawSection').style.display='none'; });
             document.getElementById('showWithdrawBtn').addEventListener('click', () => { document.getElementById('withdrawSection').style.display='block'; document.getElementById('depositSection').style.display='none'; });
 
+            // Dynamic Real-time Settings Subscription (Deposit & Support Numbers)
+            onSnapshot(doc(db, 'settings', 'config'), (snapshot) => {
+                const defaultDepositInfo = "03269277193 (BIBI FATIMA)";
+                const defaultDepositWa = "923269277193";
+                const defaultSupportWa = "923269277193";
+
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    const depInfo = data.depositInfo || defaultDepositInfo;
+                    const depWa = data.depositWaNumber || defaultDepositWa;
+                    const supWa = data.supportWaNumber || defaultSupportWa;
+
+                    document.getElementById('depositNumberDisplay').innerText = depInfo;
+                    document.getElementById('depositWaBtn').href = `https://wa.me/${cleanPhone(depWa)}`;
+                    document.getElementById('supportWaBtn').href = `https://wa.me/${cleanPhone(supWa)}`;
+
+                    document.getElementById('adminDepositInfoInput').value = depInfo;
+                    document.getElementById('adminDepositWaInput').value = depWa;
+                    document.getElementById('adminSupportWaInput').value = supWa;
+                } else {
+                    document.getElementById('depositNumberDisplay').innerText = defaultDepositInfo;
+                    document.getElementById('depositWaBtn').href = `https://wa.me/${cleanPhone(defaultDepositWa)}`;
+                    document.getElementById('supportWaBtn').href = `https://wa.me/${cleanPhone(defaultSupportWa)}`;
+
+                    document.getElementById('adminDepositInfoInput').value = defaultDepositInfo;
+                    document.getElementById('adminDepositWaInput').value = defaultDepositWa;
+                    document.getElementById('adminSupportWaInput').value = defaultSupportWa;
+                }
+            });
+
+            // Admin Save Settings Event Listener
+            document.getElementById('saveSystemSettingsBtn').addEventListener('click', async (e) => {
+                const depInfo = document.getElementById('adminDepositInfoInput').value.trim();
+                const depWa = document.getElementById('adminDepositWaInput').value.trim();
+                const supWa = document.getElementById('adminSupportWaInput').value.trim();
+
+                if (!depInfo || !depWa || !supWa) {
+                    return alert("Please fill in all contact setting fields.");
+                }
+
+                e.target.disabled = true;
+                try {
+                    await setDoc(doc(db, 'settings', 'config'), {
+                        depositInfo: depInfo,
+                        depositWaNumber: cleanPhone(depWa),
+                        supportWaNumber: cleanPhone(supWa),
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                    alert("Contact Settings saved successfully!");
+                } catch (err) {
+                    alert("Failed to save settings: " + err.message);
+                } finally {
+                    e.target.disabled = false;
+                }
+            });
+
             onSnapshot(collection(db, 'entries'), (snapshot) => { siteEntries = []; snapshot.forEach(doc => siteEntries.push({ id: doc.id, ...doc.data() })); renderAllEntries(); });
             
-            // Updated Leaderboard Query: sorting by strictly winning coins
+            // Leaderboard Query
             onSnapshot(query(collection(db, 'users'), orderBy('winningCoins', 'desc'), limit(20)), (snapshot) => {
                 const list = document.getElementById('rank-list-items'); list.innerHTML = '';
                 let index = 1;
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
-                    const name = data.ign || data.email.split('@')[0];
+                    const name = data.ign || (data.email ? data.email.split('@')[0] : 'Player');
                     const val = data.winningCoins || 0;
                     
                     if(index === 1) {
@@ -628,7 +701,7 @@
                 document.querySelectorAll('.done-withdraw-btn').forEach(btn => btn.addEventListener('click', async(e)=>{ e.target.disabled=true; await updateDoc(doc(db,'withdrawRequests',e.target.dataset.id),{status:'completed'}); }));
             });
 
-            // Send Coins to Player via Gmail System Handler - UPDATED TO INCREASE WINNING COINS
+            // Send Coins to Player via Gmail System
             document.getElementById('adminSendCoinsBtn').addEventListener('click', async (e) => {
                 const targetEmail = document.getElementById('adminSendCoinEmail').value.trim();
                 const amount = parseInt(document.getElementById('adminSendCoinAmount').value);
@@ -691,7 +764,7 @@
                     const entryCat = entry.category || 'ALL';
                     if(currentMatchFilter !== 'ALL' && entryCat !== currentMatchFilter) return;
 
-                    const bgClass = 'bg-' + escapeHTML(entry.status || '').toLowerCase().replace(' ', '');
+                    const bgClass = 'bg-' + escapeHTML(entry.status || '').toLowerCase().replace(/\s+/g, '');
                     const hasJoined = userRegistrations.includes(entry.id);
                     let maxSlots = 12;
                     if (entry.format === 'Solo') maxSlots = 48;
@@ -712,7 +785,7 @@
 
                     const actionBtnElement = newCard.querySelector('button.action-card-btn');
                     if(actionBtnElement) {
-                        actionBtnElement.addEventListener('click', (e) => {
+                        actionBtnElement.addEventListener('click', () => {
                             if(!auth.currentUser) return alert("Login required!");
                             if(hasJoined){ 
                                 if(entry.roomId){ document.getElementById('displayRoomId').innerText=entry.roomId; document.getElementById('displayRoomPass').innerText=entry.roomPass; showModal('idpModal'); }
@@ -810,7 +883,7 @@
                 });
             }
 
-            // Tournament Registration with Slot Booking (Transaction enforced)
+            // Tournament Registration with Slot Booking
             document.getElementById('confirmRegBtn').addEventListener('click', async(e) => {
                 if(!selectedEventForReg) return; 
                 const fee=parseInt(selectedEventForReg.fee)||0; 
@@ -869,7 +942,6 @@
 
             document.getElementById('emailSignInBtn').addEventListener('click', async(e)=>{ e.target.disabled=true; try{await signInWithEmailAndPassword(auth,document.getElementById('authEmail').value,document.getElementById('authPassword').value);}catch(err){alert(err.message);} finally{e.target.disabled=false;} });
             
-            // Updated registration mapping to ensure the new field exists
             document.getElementById('emailSignUpBtn').addEventListener('click', async(e)=>{ 
                 e.target.disabled=true; 
                 const em = document.getElementById('authEmail').value;
@@ -903,7 +975,7 @@
             let uSub, tSub, trSub, rSub;
             async function initUser(user) {
                 const uRef=doc(db,'users',user.uid); const uDoc=await getDoc(uRef); 
-                if(!uDoc.exists()) await setDoc(uRef,{email:user.email, coins:0, winningCoins:0, ign: user.displayName, gameUid: 'N/A', isAdmin: false, createdAt:serverTimestamp()});
+                if(!uDoc.exists()) await setDoc(uRef,{email:user.email, coins:0, winningCoins:0, ign: user.displayName || 'Player', gameUid: 'N/A', isAdmin: false, createdAt:serverTimestamp()});
                 
                 uSub = onSnapshot(uRef, d => { 
                     if(d.exists()){ 
@@ -961,8 +1033,8 @@
             document.getElementById('requestCoinsBtn').addEventListener('click', async(e)=>{ const a=parseInt(document.getElementById('coinAmountReq').value); if(isNaN(a)||a<=0)return alert("Valid amount!"); e.target.disabled=true; await addDoc(collection(db,'coinRequests'),{uid:auth.currentUser.uid,email:auth.currentUser.email,requestedCoins:a,status:'pending',createdAt:serverTimestamp()}); alert("Requested! Send SS to WA."); document.getElementById('coinAmountReq').value=''; e.target.disabled=false; });
             document.getElementById('requestWithdrawBtn').addEventListener('click', async(e)=>{ const a=parseInt(document.getElementById('withdrawAmount').value), m=document.getElementById('withdrawMethod').value, n=document.getElementById('withdrawNumber').value; if(isNaN(a)||a<10||!m||!n)return alert("Invalid details. Min 10 C."); if(currentCoins<a)return alert("Not enough coins."); e.target.disabled=true; try{await runTransaction(db,async(t)=>{const uR=doc(db,'users',auth.currentUser.uid); const uD=await t.get(uR); if((uD.data().coins||0)<a)throw "Error"; t.update(uR,{coins:uD.data().coins-a}); t.set(doc(collection(db,'withdrawRequests')),{uid:auth.currentUser.uid,email:auth.currentUser.email,amount:a,method:m,number:n,status:'pending',createdAt:serverTimestamp()}); t.set(doc(collection(db,'walletTransactions')),{uid:auth.currentUser.uid,type:'deduction',amount:a,reason:`Withdraw (${m})`,createdAt:serverTimestamp()});}); alert("Submitted!");}catch(err){alert("Fail.");}finally{e.target.disabled=false;}});
 
-            // Admin Panel Publishing
-            document.querySelector('.action-btn').addEventListener('click',async(e)=>{
+            // Admin Panel Match Publishing
+            document.getElementById('publishMatchBtn').addEventListener('click',async(e)=>{
                 const ty=e.target.dataset.type, t=document.getElementById(ty+'Title').value, d=document.getElementById(ty+'Details').value, s=document.getElementById(ty+'Status').value; 
                 const f=document.getElementById(ty+'Format').value, fe=parseInt(document.getElementById(ty+'Fee').value)||0, idp=document.getElementById(ty+'IdpTime').value, cat=document.getElementById(ty+'Category').value;
                 if(!t||!d)return alert("Fill title/details."); 
@@ -971,7 +1043,7 @@
                 alert("Published."); e.target.disabled=false; document.getElementById(ty+'Title').value=''; document.getElementById(ty+'Details').value='';
             });
 
-            // Particles Background (Now utilizing the blue theme colors)
+            // Particles Background
             const cvs = document.getElementById('live-bg'), cx = cvs.getContext('2d'); let w,h,pts=[];
             function initC(){ w=cvs.width=window.innerWidth; h=cvs.height=window.innerHeight; pts=[]; for(let i=0;i<60;i++)pts.push({x:Math.random()*w,y:Math.random()*h,s:Math.random()*2.5+1,vx:Math.random()*1-0.5,vy:Math.random()*-1.2-0.2}); }
             function animC(){ cx.clearRect(0,0,w,h); pts.forEach(p=>{cx.beginPath();cx.arc(p.x,p.y,p.s,0,Math.PI*2);cx.fillStyle='rgba(0,123,255,0.45)';cx.fill();p.x+=p.vx;p.y+=p.vy;if(p.y<0){p.y=h;p.x=Math.random()*w;}if(p.x<0||p.x>w)p.vx*=-1;}); requestAnimationFrame(animC); }
