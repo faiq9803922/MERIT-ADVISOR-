@@ -118,7 +118,7 @@
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(10, 8, 14, 0.98); backdrop-filter: blur(18px);
             border-top: 2px solid var(--primary);
-            display: flex; justify-content: space-around; align-items: center;
+            display: flex; justify-style: space-around; align-items: center;
             height: 68px; z-index: 1000; box-shadow: 0 -4px 25px rgba(0, 123, 255, 0.25);
         }
         .nav-item {
@@ -450,6 +450,16 @@
             <h2 class="sec-title">Admin Dashboard</h2>
             <div class="admin-dashboard" id="admin-dashboard-screen" style="display:block;">
                 
+                <!-- Change Admin Password Option -->
+                <div class="custom-form-box" style="border: 2px solid #e74c3c; margin-bottom: 20px;">
+                    <h3 style="color: #e74c3c;"><i class="fa-solid fa-key"></i> Change Admin Password</h3>
+                    <p style="color:#aaa; font-size:var(--font-sm); margin-bottom:10px;">Update your admin account credentials securely.</p>
+                    <input type="password" id="adminCurrentPass" placeholder="Current Password">
+                    <input type="password" id="adminNewPass" placeholder="New Password (min 6 chars)">
+                    <input type="password" id="adminConfirmNewPass" placeholder="Confirm New Password">
+                    <button id="changeAdminPassBtn" style="background: #e74c3c;">UPDATE ADMIN PASSWORD</button>
+                </div>
+
                 <!-- System Contact Settings -->
                 <div class="custom-form-box" style="border: 2px solid var(--primary); margin-bottom: 20px;">
                     <h3 style="color: var(--primary);"><i class="fa-solid fa-gear"></i> System Contact Settings</h3>
@@ -537,10 +547,10 @@
     <!-- FIREBASE SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc, runTransaction, query, where, orderBy, serverTimestamp, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Updated Firebase config based on request
+        // Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyCYyYVX8OhgRtgVuEVWGfKlY3H4nVy8W8c",
             authDomain: "merit-advisor.firebaseapp.com",
@@ -604,7 +614,7 @@
             document.getElementById('showDepositBtn').addEventListener('click', () => { document.getElementById('depositSection').style.display='block'; document.getElementById('withdrawSection').style.display='none'; });
             document.getElementById('showWithdrawBtn').addEventListener('click', () => { document.getElementById('withdrawSection').style.display='block'; document.getElementById('depositSection').style.display='none'; });
 
-            // Dynamic Real-time Settings Subscription (Deposit & Support Numbers)
+            // Dynamic Real-time Settings Subscription
             onSnapshot(doc(db, 'settings', 'config'), (snapshot) => {
                 const defaultDepositInfo = "03269277193 (BIBI FATIMA)";
                 const defaultDepositWa = "923269277193";
@@ -655,6 +665,50 @@
                     alert("Contact Settings saved successfully!");
                 } catch (err) {
                     alert("Failed to save settings: " + err.message);
+                } finally {
+                    e.target.disabled = false;
+                }
+            });
+
+            // Change Admin Password Event Listener
+            document.getElementById('changeAdminPassBtn').addEventListener('click', async (e) => {
+                const currentPass = document.getElementById('adminCurrentPass').value;
+                const newPass = document.getElementById('adminNewPass').value;
+                const confirmNewPass = document.getElementById('adminConfirmNewPass').value;
+
+                if (!currentPass || !newPass || !confirmNewPass) {
+                    return alert("Please fill in all password fields.");
+                }
+
+                if (newPass.length < 6) {
+                    return alert("New password must be at least 6 characters long.");
+                }
+
+                if (newPass !== confirmNewPass) {
+                    return alert("New passwords do not match!");
+                }
+
+                const user = auth.currentUser;
+                if (!user || !user.email) {
+                    return alert("No authenticated admin user session found.");
+                }
+
+                e.target.disabled = true;
+
+                try {
+                    // Re-authenticate user before changing sensitive auth data
+                    const credential = EmailAuthProvider.credential(user.email, currentPass);
+                    await reauthenticateWithCredential(user, credential);
+
+                    // Update password in Firebase Auth
+                    await updatePassword(user, newPass);
+
+                    alert("Admin password updated successfully!");
+                    document.getElementById('adminCurrentPass').value = '';
+                    document.getElementById('adminNewPass').value = '';
+                    document.getElementById('adminConfirmNewPass').value = '';
+                } catch (err) {
+                    alert("Failed to update password: " + err.message);
                 } finally {
                     e.target.disabled = false;
                 }
