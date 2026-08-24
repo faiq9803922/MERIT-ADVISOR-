@@ -2,64 +2,1107 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Maintenance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MERIT ADVISOR | Esports & Gaming</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: #f0f4f8; /* Very light blue background */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
+        :root {
+            --bg-dark: #050407;
+            --bg-panel: rgba(10, 15, 25, 0.95);
+            --primary: #007bff;
+            --primary-glow: rgba(0, 123, 255, 0.85);
+            --accent-orange: #00a2ff;
+            --text-main: #f0f0f0;
+            --text-light: #ffffff;
+            --border-color: rgba(0, 123, 255, 0.45);
+
+            --status-upcoming: #f39c12;
+            --status-completed: #27ae60;
+            --status-ongoing: #8e44ad;
+            --status-ended: #c0392b;
+            --status-available: #2980b9;
+
+            --font-sm: clamp(0.7rem, 2vw, 0.9rem);
+            --font-md: clamp(0.85rem, 2.5vw, 1.1rem);
+            --font-lg: clamp(1rem, 3vw, 1.3rem);
+            --font-xl: clamp(1.3rem, 5vw, 2rem);
+            --font-xxl: clamp(1.8rem, 8vw, 3.5rem);
+            --font-hero: clamp(2.3rem, 11vw, 5.5rem);
         }
 
-        h1 {
-            color: #1e3a8a; /* Deep blue */
-            font-size: 2.5rem;
-            margin-top: 30px;
-            margin-bottom: 10px;
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 50% 15%, rgba(0, 123, 255, 0.18) 0%, transparent 60%),
+                radial-gradient(circle at 85% 85%, rgba(0, 162, 255, 0.1) 0%, transparent 50%),
+                linear-gradient(rgba(0, 123, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 123, 255, 0.025) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            background-attachment: fixed;
+            color: var(--text-main);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            font-size: var(--font-md);
+            padding-bottom: 90px;
+        }
+
+        h1, h2, h3, h4, .logo-text, .start-btn, .action-card-btn, button {
+            font-family: 'Bebas Neue', sans-serif;
             letter-spacing: 1.5px;
         }
 
-        p {
-            color: #3b82f6; /* Bright blue */
-            font-size: 1.2rem;
-            max-width: 80%;
+        body:not(.logged-in) header,
+        body:not(.logged-in) .bottom-nav { display: none !important; }
+
+        body:not(.logged-in) main .page-section:not(#user-auth) { display: none !important; }
+
+        body:not(.logged-in) #user-auth {
+            display: flex !important;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 1 !important;
+            min-height: 100vh;
+            padding-top: 10px;
         }
 
-        /* Circle Browsing / Loading Spinner */
-        .spinner {
-            width: 70px;
-            height: 70px;
-            border: 8px solid #dbeafe; /* Pale blue track */
-            border-top: 8px solid #2563eb; /* Primary blue moving element */
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        body.logged-in .auth-header { display: none; }
+
+        #login-animation {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--bg-dark); z-index: 9999; display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            color: var(--primary);
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+        #login-animation .spinner {
+            width: clamp(50px, 10vw, 80px); height: clamp(50px, 10vw, 80px);
+            border: 6px solid rgba(0, 123, 255, 0.2); border-top-color: var(--primary);
+            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;
+            box-shadow: 0 0 30px var(--primary-glow);
         }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulseText { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.98); } }
+
+        #live-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
+
+        header {
+            position: fixed; top: 0; width: 100%; height: 65px;
+            background: rgba(5, 4, 7, 0.94); backdrop-filter: blur(15px);
+            border-bottom: 2px solid var(--primary);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 15px; z-index: 1000; box-shadow: 0 4px 25px rgba(0, 123, 255, 0.4);
+        }
+
+        .brand-logo-container { display: flex; align-items: center; gap: 10px; text-decoration: none; cursor: pointer; }
+        .header-logo-img { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; box-shadow: 0 0 10px var(--primary-glow); }
+        
+        .logo-text { font-size: clamp(1.2rem, 4.5vw, 1.8rem); color: var(--text-light); text-shadow: 0 0 10px rgba(0, 123, 255, 0.6); line-height: 1; }
+        .logo-text span { color: var(--primary); text-shadow: 0 0 12px var(--primary-glow); }
+
+        .coin-display {
+            background: rgba(0,0,0,0.85); border: 1px solid var(--primary);
+            padding: 5px 12px; border-radius: 20px; font-weight: bold; font-family: 'Montserrat', sans-serif;
+            color: var(--primary); display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 0 12px rgba(0, 123, 255, 0.3); font-size: var(--font-sm);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(10, 8, 14, 0.98); backdrop-filter: blur(18px);
+            border-top: 2px solid var(--primary);
+            display: flex; justify-style: space-around; align-items: center;
+            height: 68px; z-index: 1000; box-shadow: 0 -4px 25px rgba(0, 123, 255, 0.25);
+        }
+        .nav-item {
+            color: #777; text-decoration: none; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 3px; font-size: 0.72rem; 
+            font-family: 'Montserrat', sans-serif; transition: 0.3s; width: 25%; font-weight: 700;
+        }
+        .nav-item i { font-size: 1.35rem; margin-bottom: 2px; }
+        .nav-item.active { color: var(--primary); text-shadow: 0 0 12px var(--primary-glow); }
+        .nav-item.active i { transform: scale(1.12); }
+
+        /* Matches Sub Nav */
+        .matches-sub-nav {
+            display: flex; overflow-x: auto; gap: 10px; margin-bottom: 20px; padding-bottom: 8px; scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .matches-sub-nav::-webkit-scrollbar { display: none; }
+        .sub-nav-btn {
+            background: rgba(0,0,0,0.65); border: 1px solid var(--border-color); color: #ccc;
+            padding: 8px 16px; border-radius: 20px; white-space: nowrap; font-size: var(--font-sm);
+            cursor: pointer; transition: 0.3s; font-weight: bold; flex-shrink: 0;
+        }
+        .sub-nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
+
+        .rank-top1 {
+            text-align: center; margin-bottom: 25px; background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(0,0,0,0.85));
+            border: 1px solid gold; padding: 25px 15px; border-radius: 12px; box-shadow: 0 0 25px rgba(255, 215, 0, 0.25);
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .rank-top1 h3 { color: gold; font-size: var(--font-xxl); text-shadow: 0 0 15px rgba(255, 215, 0, 0.6); line-height: 1; margin:0;}
+        .rank-top1 p { color: #eee; font-size: var(--font-md); margin:0;}
+        
+        .rank-list-container { background: rgba(0,0,0,0.65); border-radius: 8px; border: 1px solid var(--border-color); padding: 10px; }
+        .rank-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #333; font-size: var(--font-sm); }
+        .rank-item:last-child { border-bottom: none; }
+        .rank-pos { width: 35px; font-weight: bold; color: var(--primary); }
+        .rank-name { flex: 1; font-weight: bold; color: white; word-break: break-word; }
+        .rank-earnings { color: #27ae60; font-weight: bold; }
+
+        .page-section { display: none; padding: 85px 15px 45px 15px; min-height: 100vh; opacity: 0; transition: opacity 0.4s ease-out; }
+        .page-section.active { display: block; opacity: 1; }
+        .sec-title { font-size: var(--font-xxl); color: var(--text-light); border-left: 4px solid var(--primary); padding-left: 15px; margin-bottom: 25px; text-shadow: 0 3px 12px rgba(0, 123, 255, 0.6); text-transform: uppercase; }
+
+        .start-btn { display: inline-block; padding: 12px 20px; font-size: clamp(1rem, 4vw, 1.4rem); background: var(--primary); color: #fff; font-weight: bold; border: none; cursor: pointer; text-decoration: none; clip-path: polygon(6% 0, 100% 0, 94% 100%, 0% 100%); transition: all 0.3s ease; box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4); text-align: center; }
+        .start-btn:hover:not(:disabled) { transform: scale(1.02); background: #0056b3; box-shadow: 0 0 35px var(--primary-glow); }
+        .start-btn:disabled { opacity: 0.6; cursor: not-allowed; background: #555; box-shadow: none; }
+
+        /* Perfect Mobile Grid */
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(100%, 1fr)); gap: 15px; }
+        @media (min-width: 600px) { .grid-container { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); } }
+        
+        .gaming-card { background: var(--bg-panel); backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-top: 4px solid var(--primary); padding: 16px; border-radius: 8px; transition: all 0.3s ease; box-shadow: 0 6px 22px rgba(0,0,0,0.75); display: flex; flex-direction: column; }
+        .gaming-card h3 { font-size: var(--font-xl); color: white; margin-bottom: 8px; text-shadow: 0 2px 8px rgba(255,255,255,0.2); }
+        .gaming-card p { font-size: var(--font-sm); line-height: 1.5; white-space: pre-wrap; margin-bottom: 15px; flex-grow: 1; color: #d0d0d0; }
+        .fee-badge { font-family: 'Montserrat', sans-serif; font-size: var(--font-sm); color: var(--primary); font-weight: bold; margin-bottom: 12px; background: rgba(0, 123, 255, 0.15); padding: 4px 10px; border-radius: 4px; display: inline-block; box-shadow: 0 0 8px rgba(0, 123, 255, 0.2); }
+        .badge { color: white; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; border-radius: 3px; display: inline-block; margin-bottom: 10px; font-family: 'Montserrat', sans-serif; align-self: flex-start; text-transform: uppercase; }
+        
+        .bg-upcoming { background: var(--status-upcoming); } .bg-ongoing { background: var(--status-ongoing); } .bg-completed { background: var(--status-completed); } .bg-ended { background: var(--status-ended); }
+        
+        .action-card-btn { background: var(--primary); color: #fff; font-weight: bold; border: none; padding: 12px; font-size: var(--font-lg); cursor: pointer; margin-top: auto; border-radius: 4px; transition: 0.3s; text-transform: uppercase; width: 100%; box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3); }
+        .action-card-btn:disabled { background: #444; color: #888; cursor: not-allowed; box-shadow: none; }
+        .btn-get-idp { background: #25D366 !important; color: #fff !important; }
+
+        .user-auth-box, .user-profile-card { width: 100%; max-width: 450px; margin: 0 auto; background: var(--bg-panel); backdrop-filter: blur(15px); padding: 22px 16px; border: 1px solid var(--primary); border-radius: 10px; box-shadow: 0 8px 30px rgba(0, 123, 255, 0.25); text-align: center; }
+        .profile-img { width: 75px; height: 75px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 10px; object-fit: cover; box-shadow: 0 0 15px var(--primary-glow); }
+        
+        .custom-form-box { background: var(--bg-panel); backdrop-filter: blur(12px); padding: 16px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.65); text-align: left;}
+        .custom-form-box h3, .custom-form-box h4 { font-size: var(--font-xl); margin-bottom: 15px; color: white;}
+        .custom-form-box input, .custom-form-box textarea, .custom-form-box select { width: 100%; padding: 12px; margin-bottom: 12px; background: rgba(0,0,0,0.85); border: 1px solid #444; color: white; font-size: 15px; font-family: 'Montserrat', sans-serif; border-radius: 6px; }
+        .custom-form-box input:focus, .custom-form-box textarea:focus, .custom-form-box select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 8px rgba(0,123,255,0.3); }
+        .custom-form-box button { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; cursor: pointer; font-weight: bold; font-size: var(--font-lg); border-radius: 6px; transition: 0.3s; }
+        
+        /* Modals scaled for mobile */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(8px); z-index: 2000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; padding: 15px; }
+        .modal-content { background: var(--bg-panel); padding: 22px; border: 2px solid var(--primary); border-radius: 10px; width: 100%; max-width: 450px; position: relative; max-height: 85vh; overflow-y: auto; transform: scale(0.9); }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .close-modal { position: absolute; top: 12px; right: 16px; font-size: 2rem; color: #888; cursor: pointer; line-height: 1; }
+
+        .list-item-row { background: rgba(0,0,0,0.85); padding: 12px; border: 1px solid #444; border-radius: 6px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; word-wrap: break-word;}
+        .row-header-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-danger, .btn-success, .btn-primary, .btn-warning { border: none; padding: 8px 12px; cursor: pointer; font-weight: bold; border-radius: 4px; color: white; font-family: 'Montserrat', sans-serif; font-size: 12px; flex-grow: 1; text-align: center;}
+        .btn-danger { background: #e74c3c; } .btn-success { background: #27ae60; } .btn-primary { background: #2980b9; } .btn-warning { background: #f39c12; }
+        
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        td, th { word-wrap: break-word; font-size: var(--font-sm); padding: 8px; border-color: #444;}
+        
+        .hidden { display: none !important; }
     </style>
 </head>
+
 <body>
+    <div id="login-animation">
+        <div class="spinner"></div>
+        <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: var(--font-xxl); animation: pulseText 1.5s infinite;">AUTHENTICATING...</h2>
+    </div>
 
-    <!-- Circle Browsing Animation -->
-    <div class="spinner"></div>
+    <canvas id="live-bg"></canvas>
 
-    <!-- Maintenance Text -->
-    <h1>SERVER IN MAINTENANCE</h1>
-    <p>We are currently performing scheduled updates. Please check back shortly.</p>
+    <header>
+        <a href="#matches" class="brand-logo-container nav-item-btn" data-target="matches">
+            <img src="logo1.png" alt="Logo" class="header-logo-img">
+            <div class="logo-text">MERIT <span>ADVISOR</span></div>
+        </a>
+        <div class="header-controls">
+            <div class="coin-display" id="headerCoinDisplay" style="display:none;"><i class="fa-solid fa-coins" style="color: gold;"></i> <span id="walletBalanceTop">0</span> PKR</div>
+        </div>
+    </header>
 
+    <nav class="bottom-nav">
+        <a href="#matches" class="nav-item active nav-item-btn" data-target="matches">
+            <i class="fa-solid fa-gamepad"></i><span>MATCHES</span>
+        </a>
+        <a href="#rank" class="nav-item nav-item-btn" data-target="rank">
+            <i class="fa-solid fa-trophy"></i><span>RANK</span>
+        </a>
+        <a href="#teams" class="nav-item nav-item-btn" data-target="teams">
+            <i class="fa-solid fa-user-group"></i><span>TEAM</span>
+        </a>
+        <a href="#profile" class="nav-item nav-item-btn" data-target="profile">
+            <i class="fa-solid fa-id-badge"></i><span>PROFILE</span>
+        </a>
+    </nav>
+
+    <!-- Registration & Slot Modal -->
+    <div class="modal-overlay" id="regModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeRegModal">&times;</span>
+            <h3 id="regModalTitle" style="font-family: 'Bebas Neue', sans-serif; font-size: var(--font-xxl); color:var(--primary);">JOIN EVENT</h3>
+            <p id="regModalDetails" style="margin-bottom: 15px; font-size: var(--font-sm); color: #ccc;"></p>
+            <div class="custom-form-box" style="border:none; padding:0; box-shadow:none; margin:0;">
+                
+                <div id="soloIgnContainer" style="display:none; margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-size:var(--font-sm); color:var(--primary); font-weight:bold;">Your Exact IGN:</label>
+                    <input type="text" id="regSoloIgn" placeholder="Player Name">
+                </div>
+                
+                <div id="teamSelectContainer" style="display:none; margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-size:var(--font-sm); color:var(--primary); font-weight:bold;">Select Team:</label>
+                    <select id="regTeamSelect"></select>
+                </div>
+
+                <!-- Slot Selection Box -->
+                <div id="slotSelectionContainer" style="display:none; margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-size:var(--font-sm); color:var(--primary); font-weight:bold;">Select Slot:</label>
+                    <div id="slotGrid" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.4); padding: 10px; border: 1px solid #444; border-radius: 4px;"></div>
+                    <input type="hidden" id="selectedSlotValue">
+                </div>
+
+                <button id="confirmRegBtn">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IDP Modal -->
+    <div class="modal-overlay" id="idpModal">
+        <div class="modal-content" style="text-align: center;">
+            <span class="close-modal" id="closeIdpModal">&times;</span>
+            <h3 style="color: #25D366; text-shadow: 0 0 15px rgba(37,211,102,0.5); font-family: 'Bebas Neue', sans-serif; font-size: var(--font-xxl);">ROOM DETAILS</h3>
+            <div style="background: rgba(0,0,0,0.8); padding: 15px; border: 1px solid var(--primary); border-radius: 6px; margin-bottom: 10px;">
+                <p style="font-size: var(--font-md); color: #fff;"><strong>Room ID:</strong> <br><span id="displayRoomId" style="color: var(--primary); font-size: var(--font-xl); font-weight: bold; display:inline-block; margin-top:5px;"></span></p>
+            </div>
+            <div style="background: rgba(0,0,0,0.8); padding: 15px; border: 1px solid var(--primary); border-radius: 6px;">
+                <p style="font-size: var(--font-md); color: #fff;"><strong>Password:</strong> <br><span id="displayRoomPass" style="color: var(--primary); font-size: var(--font-xl); font-weight: bold; display:inline-block; margin-top:5px;"></span></p>
+            </div>
+            <p style="color: #aaa; font-size: var(--font-sm); margin-top: 10px;">Do not share outside your team.</p>
+        </div>
+    </div>
+
+    <!-- Admin Participants Modal -->
+    <div class="modal-overlay" id="adminParticipantsModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeAdminParticipantsModal">&times;</span>
+            <h3 id="adminPartTitle" style="font-family: 'Bebas Neue', sans-serif; font-size: var(--font-xl); color:var(--primary);">PLAYERS</h3>
+            <div id="adminPartList" style="max-height: 350px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 6px; border: 1px solid #444;"></div>
+        </div>
+    </div>
+
+    <main>
+        <!-- User Authentication & Registration -->
+        <section id="user-auth" class="page-section active">
+            <div class="auth-header" style="text-align: center; margin-bottom: 20px;">
+                <img src="logo1.png" alt="Logo" style="width: 85px; height: 85px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; margin: 0 auto 12px auto; box-shadow: 0 0 20px var(--primary-glow);">
+                <h1 style="font-size: var(--font-hero); text-shadow: 0 0 25px var(--primary-glow); font-family: 'Bebas Neue', sans-serif;">MERIT <span style="color: var(--primary);">ADVISOR</span></h1>
+                <p style="color: #ccc; font-size: var(--font-sm); margin-top: 5px;">Sign in to access the platform.</p>
+            </div>
+            <div class="user-auth-box" id="authBox">
+                <h2 id="authTitle" style="font-family: 'Bebas Neue', sans-serif; font-size: var(--font-xxl); margin-bottom: 15px; color: var(--primary);">LOGIN</h2>
+                <div class="custom-form-box" style="border:none; padding:0; box-shadow:none; margin-bottom:0; text-align: center;">
+                    <input type="email" id="authEmail" placeholder="Email Address">
+                    
+                    <div id="signup-fields" class="hidden">
+                        <input type="text" id="authIGN" placeholder="In-Game Name (Exact IGN)">
+                        <input type="text" id="authGameUid" placeholder="Game UID (Numbers)">
+                        
+                        <!-- Admin Access Setup -->
+                        <div style="margin: 15px 0; text-align: left; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 6px; border: 1px solid var(--primary);">
+                            <label style="color:var(--primary); font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px;">ADMIN ACCESS?</label>
+                            <select id="authAdminToggle" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.85); border: 1px solid #444; color: white; margin-bottom: 10px; border-radius: 4px;">
+                                <option value="NO">NO</option>
+                                <option value="YES">YES</option>
+                            </select>
+                            <input type="password" id="authAdminPass" class="hidden" placeholder="Admin Key" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.85); border: 1px solid #444; color: white; border-radius: 4px;">
+                        </div>
+                    </div>
+
+                    <input type="password" id="authPassword" placeholder="Password">
+                    <input type="password" id="authConfirmPassword" class="hidden" placeholder="Confirm Password">
+                    
+                    <button id="emailSignInBtn" class="start-btn" style="width: 100%; margin-bottom: 10px;">SIGN IN</button>
+                    <button id="emailSignUpBtn" class="start-btn hidden" style="width: 100%; margin-bottom: 10px;">REGISTER</button>
+                    
+                    <p id="authToggleMsg" style="color:#aaa; font-size:var(--font-sm); margin-top:10px; cursor:pointer; text-decoration: underline;">Need an account? Register</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Matches Section -->
+        <section id="matches" class="page-section">
+            <h2 class="sec-title">ARENA MATCHES</h2>
+            <div class="matches-sub-nav">
+                <div class="sub-nav-btn active" data-filter="ALL">ALL</div>
+                <div class="sub-nav-btn" data-filter="SCRIMS">SCRIMS</div>
+                <div class="sub-nav-btn" data-filter="PER KILL">PER KILL</div>
+                <div class="sub-nav-btn" data-filter="SURVIVAL">SURVIVAL</div>
+                <div class="sub-nav-btn" data-filter="CLASH SQUAD">CLASH SQUAD</div>
+                <div class="sub-nav-btn" data-filter="LONEWOLF">LONEWOLF</div>
+                <div class="sub-nav-btn" data-filter="CRAFTLAND">CRAFTLAND</div>
+            </div>
+            <div class="grid-container" id="all-matches-list">
+                <!-- Matches injected here -->
+            </div>
+        </section>
+
+        <!-- Rank Section -->
+        <section id="rank" class="page-section">
+            <h2 class="sec-title">LEADERBOARD</h2>
+            <div class="rank-top1">
+                <i class="fa-solid fa-crown" style="color: gold; font-size: 3rem; margin-bottom: 5px;"></i>
+                <p style="color: #bbb; font-size: 12px; font-weight: bold; letter-spacing: 2px;">TOP 1 MVP</p>
+                <h3 id="top1-name">LOADING...</h3>
+                <p>Earned: <strong style="color: #27ae60;" id="top1-earnings">0 PKR</strong></p>
+            </div>
+            <div class="rank-list-container">
+                <div id="rank-list-items"></div>
+            </div>
+        </section>
+
+        <!-- Teams Section -->
+        <section id="teams" class="page-section">
+            <h2 class="sec-title">Team Management</h2>
+            <div class="custom-form-box" style="margin-bottom: 30px;">
+                <h3>Create Team</h3>
+                <p style="color:#aaa; margin-bottom:10px; font-size:var(--font-sm);">4 Players required.</p>
+                <input type="text" id="teamNameInput" placeholder="Team Name">
+                <input type="text" id="p1Input" placeholder="Player 1 IGN">
+                <input type="text" id="p2Input" placeholder="Player 2 IGN">
+                <input type="text" id="p3Input" placeholder="Player 3 IGN">
+                <input type="text" id="p4Input" placeholder="Player 4 IGN">
+                <button id="createTeamBtn">CREATE</button>
+            </div>
+            <h3 style="font-family: 'Bebas Neue', sans-serif; font-size:var(--font-xl); margin-bottom: 15px; color: var(--primary);">MY TEAMS</h3>
+            <div class="grid-container" id="my-teams-list"></div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile" class="page-section">
+            <h2 class="sec-title">MY PROFILE</h2>
+            
+            <div class="user-profile-card" style="margin: 0 0 20px 0; max-width: 100%;">
+                <img id="profilePic" src="logo1.png" alt="Profile" class="profile-img">
+                <h3 id="profileName" style="font-size: var(--font-xxl); color: var(--primary); font-family: 'Bebas Neue', sans-serif; margin-bottom: 10px;">-</h3>
+                <p style="font-size: var(--font-sm); color: #ccc;"><strong>UID:</strong> <span id="profileGameUid">-</span></p>
+                <p style="font-size: var(--font-sm); color: #ccc;"><strong>Email:</strong> <span id="profileEmailCard">-</span></p>
+            </div>
+
+            <!-- Wallet -->
+            <div class="custom-form-box" style="text-align:center;">
+                <h3 style="font-family: 'Bebas Neue', sans-serif; color:var(--primary);">MY WALLET</h3>
+                <h2 style="font-size:var(--font-xxl); color:white; margin: 10px 0;"><i class="fa-solid fa-coins" style="color: gold;"></i> <span id="mainWalletBalance">0</span></h2>
+                <p style="color:#27ae60; font-size:var(--font-sm); margin-bottom:15px; font-weight: bold;">1 COIN = 1 PKR</p>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button id="showDepositBtn" class="start-btn" style="flex:1; font-size: 1rem; padding: 10px;">DEPOSIT</button>
+                    <button id="showWithdrawBtn" class="start-btn" style="flex:1; font-size: 1rem; padding: 10px; background: #27ae60;">WITHDRAW</button>
+                </div>
+
+                <div id="depositSection" style="display:none; text-align:left; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 6px;">
+                    <div style="border-left:4px solid var(--primary); padding-left: 10px; margin-bottom:15px; font-size:var(--font-sm);">
+                        <p style="color:var(--primary); font-weight:bold;">Payment Info (JAZZCASH)</p>
+                        <p id="depositNumberDisplay">03269277193 (BIBI FATIMA)</p>
+                        <p style="color:#e74c3c; font-size: 11px; margin-top: 5px; font-weight: bold;">AFTER PAYMENT SCREENSHOT MUST</p>
+                    </div>
+                    <input type="number" id="coinAmountReq" placeholder="Coins to buy" min="1">
+                    <button id="requestCoinsBtn" style="margin-bottom:10px; font-size:var(--font-md);">1. REQUEST</button>
+                    <a id="depositWaBtn" href="https://wa.me/923269277193" target="_blank" class="start-btn" style="width:100%; padding:10px; background:#25D366; color:#fff; font-size:var(--font-md); text-align:center; display:block;">
+                        <i class="fa-brands fa-whatsapp"></i> 2. SEND SCREENSHOT
+                    </a>
+                </div>
+
+                <div id="withdrawSection" style="display:none; text-align:left; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 6px;">
+                    <p style="color:#ccc; margin-bottom:10px; font-size:var(--font-sm);">Min Withdraw: <strong>10 Coins</strong></p>
+                    <input type="number" id="withdrawAmount" placeholder="Amount" min="10">
+                    <select id="withdrawMethod"><option value="" disabled selected>Method</option><option value="JazzCash">JazzCash</option><option value="EasyPaisa">EasyPaisa</option></select>
+                    <input type="text" id="withdrawNumber" placeholder="Account Number">
+                    <button id="requestWithdrawBtn" style="background:#27ae60; font-size:var(--font-md);">WITHDRAW</button>
+                </div>
+            </div>
+
+            <div class="custom-form-box">
+                <h3 style="font-family: 'Bebas Neue', sans-serif;">TRANSACTION HISTORY</h3>
+                <div id="transactionList" style="max-height: 200px; overflow-y:auto; margin-top:10px; font-size:var(--font-sm);"></div>
+            </div>
+
+            <div class="custom-form-box" style="text-align: center;">
+                <h3 style="font-family: 'Bebas Neue', sans-serif;">CUSTOMER SUPPORT</h3>
+                <p style="font-size: var(--font-sm); color: #ccc; margin-bottom: 10px;">Need help? We're available 24/7 on WhatsApp.</p>
+                <a id="supportWaBtn" href="https://wa.me/923269277193" target="_blank" class="start-btn" style="background: #25D366; color:#fff; width: 100%; font-size:var(--font-md);"><i class="fa-brands fa-whatsapp"></i> CHAT NOW</a>
+            </div>
+
+            <!-- Admin Button Hidden by Default -->
+            <button id="openAdminBtn" class="hidden" style="background:transparent; color:var(--primary); font-weight:bold; border:1px solid var(--primary); width:100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; cursor:pointer;">SYSTEM ADMIN DASHBOARD</button>
+            <button class="start-btn" id="userLogoutBtn" style="width: 100%; background: #c0392b; color: #fff;">LOG OUT</button>
+        </section>
+
+        <!-- Admin Section -->
+        <section id="admin" class="page-section">
+            <h2 class="sec-title">Admin Dashboard</h2>
+            <div class="admin-dashboard" id="admin-dashboard-screen" style="display:block;">
+                
+                <!-- Change Admin Password Option -->
+                <div class="custom-form-box" style="border: 2px solid #e74c3c; margin-bottom: 20px;">
+                    <h3 style="color: #e74c3c;"><i class="fa-solid fa-key"></i> Change Admin Password</h3>
+                    <p style="color:#aaa; font-size:var(--font-sm); margin-bottom:10px;">Update your admin account credentials securely.</p>
+                    <input type="password" id="adminCurrentPass" placeholder="Current Password">
+                    <input type="password" id="adminNewPass" placeholder="New Password (min 6 chars)">
+                    <input type="password" id="adminConfirmNewPass" placeholder="Confirm New Password">
+                    <button id="changeAdminPassBtn" style="background: #e74c3c;">UPDATE ADMIN PASSWORD</button>
+                </div>
+
+                <!-- System Contact Settings -->
+                <div class="custom-form-box" style="border: 2px solid var(--primary); margin-bottom: 20px;">
+                    <h3 style="color: var(--primary);"><i class="fa-solid fa-gear"></i> System Contact Settings</h3>
+                    <p style="color:#aaa; font-size:var(--font-sm); margin-bottom:10px;">Update deposit info and WhatsApp numbers in real time across the application.</p>
+                    <label style="color:var(--primary); font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Deposit Info Displayed To Users:</label>
+                    <input type="text" id="adminDepositInfoInput" placeholder="e.g. 03269277193 (BIBI FATIMA)">
+                    
+                    <label style="color:var(--primary); font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Deposit WhatsApp Number (Digits only with country code):</label>
+                    <input type="text" id="adminDepositWaInput" placeholder="e.g. 923269277193">
+
+                    <label style="color:var(--primary); font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Customer Support WhatsApp Number (Digits only with country code):</label>
+                    <input type="text" id="adminSupportWaInput" placeholder="e.g. 923269277193">
+
+                    <button id="saveSystemSettingsBtn" style="background: var(--primary);">SAVE CONTACT SETTINGS</button>
+                </div>
+
+                <!-- Admin System to Send Coins via Gmail -->
+                <div class="custom-form-box" style="border: 2px solid #27ae60; margin-bottom: 20px;">
+                    <h3 style="color: #27ae60;"><i class="fa-solid fa-paper-plane"></i> Send Coins to Player (Gmail System)</h3>
+                    <p style="color:#aaa; font-size:var(--font-sm); margin-bottom:10px;">Use this system to reward tournament winners directly.</p>
+                    <input type="email" id="adminSendCoinEmail" placeholder="Player Gmail Address">
+                    <input type="number" id="adminSendCoinAmount" placeholder="Coin Amount (e.g. 100)" min="1">
+                    <input type="text" id="adminSendCoinReason" placeholder="Reason (e.g. Winner - 1st Place)">
+                    <button id="adminSendCoinsBtn" style="background: #27ae60;">SEND COINS</button>
+                </div>
+
+                <div class="custom-form-box" style="margin-bottom: 20px;">
+                    <h4>Add Match Event</h4>
+                    <input type="text" id="scrimTitle" placeholder="Title">
+                    <textarea id="scrimDetails" placeholder="Details" rows="2"></textarea>
+                    
+                    <label style="color:var(--primary); font-size: 12px; font-weight: bold;">Category Tab:</label>
+                    <select id="scrimCategory">
+                        <option value="SCRIMS">SCRIMS</option>
+                        <option value="PER KILL">PER KILL</option>
+                        <option value="SURVIVAL">SURVIVAL</option>
+                        <option value="CLASH SQUAD">CLASH SQUAD</option>
+                        <option value="LONEWOLF">LONEWOLF</option>
+                        <option value="CRAFTLAND">CRAFTLAND</option>
+                    </select>
+
+                    <label style="color:var(--primary); font-size: 12px; font-weight: bold;">Format (Slots):</label>
+                    <select id="scrimFormat">
+                        <option value="Team">Team (12 Slots)</option>
+                        <option value="Solo">Solo (48 Slots)</option>
+                        <option value="CS 1v1">CS 1v1 (2 Slots)</option>
+                        <option value="CS 2v2">CS 2v2 (2 Slots)</option>
+                        <option value="CS 3v3">CS 3v3 (2 Slots)</option>
+                        <option value="CS 4v4">CS 4v4 (2 Slots)</option>
+                        <option value="Craftland M590 Solo">Craftland M590 Solo (6 Slots)</option>
+                        <option value="Craftland M590 Duo">Craftland M590 Duo (6 Slots)</option>
+                        <option value="Lone Wolf 1v1">Lone Wolf 1v1 (2 Slots)</option>
+                        <option value="Lone Wolf 2v2">Lone Wolf 2v2 (2 Slots)</option>
+                    </select>
+                    
+                    <input type="number" id="scrimFee" placeholder="Fee (0 for Free)">
+                    <input type="text" id="scrimIdpTime" placeholder="IDP Time">
+                    <select id="scrimStatus">
+                        <option value="Upcoming">Upcoming</option>
+                        <option value="On Going">On Going</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Ended">Ended</option>
+                    </select>
+                    <button id="publishMatchBtn" class="action-btn" data-type="scrim">PUBLISH</button>
+                </div>
+
+                <div class="custom-form-box" style="margin-bottom: 20px;">
+                    <h3 style="color: var(--primary);">Deposit Requests</h3>
+                    <div id="admin-coin-requests-list"></div>
+                </div>
+
+                <div class="custom-form-box" style="margin-bottom: 20px;">
+                    <h3 style="color: #27ae60;">Withdraw Requests</h3>
+                    <div id="admin-withdraw-requests-list"></div>
+                </div>
+
+                <div class="custom-form-box">
+                    <h3 style="color: var(--primary);">Manage Matches</h3>
+                    <div id="admin-manage-list"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FIREBASE SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc, runTransaction, query, where, orderBy, serverTimestamp, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCYyYVX8OhgRtgVuEVWGfKlY3H4nVy8W8c",
+            authDomain: "merit-advisor.firebaseapp.com",
+            projectId: "merit-advisor",
+            storageBucket: "merit-advisor.firebasestorage.app",
+            messagingSenderId: "341164696474",
+            appId: "1:341164696474:web:60d15ea537cd4508389023",
+            measurementId: "G-QNHLVL5J9B"
+        };
+        
+        const app = initializeApp(firebaseConfig); 
+        const auth = getAuth(app); 
+        const db = getFirestore(app);
+
+        function escapeHTML(str) { return str ? String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[m])) : ''; }
+        function cleanPhone(num) { return num ? String(num).replace(/[^0-9]/g, '') : ''; }
+
+        let siteEntries = [], userTeams = [], userRegistrations = [], currentCoins = 0, selectedEventForReg = null;
+        let currentMatchFilter = 'ALL';
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            function showModal(modalId) { const m = document.getElementById(modalId); if(!m) return; m.style.display='flex'; void m.offsetWidth; m.classList.add('active'); }
+            function hideModal(modalId) { const m = document.getElementById(modalId); if(!m) return; m.classList.remove('active'); setTimeout(() => m.style.display='none', 300); }
+
+            ['closeRegModal','closeIdpModal','closeAdminParticipantsModal'].forEach(id => {
+                document.getElementById(id)?.addEventListener('click', () => hideModal(id.replace('close','').charAt(0).toLowerCase() + id.replace('close','').slice(1)));
+            });
+
+            // Navigation Logic
+            document.querySelectorAll('.nav-item-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const target = btn.getAttribute('data-target');
+                    
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    if(btn.classList.contains('nav-item')) btn.classList.add('active');
+
+                    document.querySelectorAll('.page-section').forEach(sec => { sec.style.display = 'none'; sec.classList.remove('active'); });
+                    const targetSec = document.getElementById(target);
+                    if(targetSec) { targetSec.style.display = 'block'; setTimeout(() => targetSec.classList.add('active'), 10); }
+                    window.scrollTo(0,0);
+                });
+            });
+
+            document.getElementById('openAdminBtn').addEventListener('click', () => {
+                document.querySelectorAll('.page-section').forEach(sec => { sec.style.display = 'none'; sec.classList.remove('active'); });
+                const adminSec = document.getElementById('admin');
+                adminSec.style.display = 'block'; setTimeout(() => adminSec.classList.add('active'), 10);
+            });
+
+            document.querySelectorAll('.sub-nav-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.sub-nav-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentMatchFilter = e.target.getAttribute('data-filter');
+                    renderAllEntries();
+                });
+            });
+
+            document.getElementById('showDepositBtn').addEventListener('click', () => { document.getElementById('depositSection').style.display='block'; document.getElementById('withdrawSection').style.display='none'; });
+            document.getElementById('showWithdrawBtn').addEventListener('click', () => { document.getElementById('withdrawSection').style.display='block'; document.getElementById('depositSection').style.display='none'; });
+
+            // Dynamic Real-time Settings Subscription
+            onSnapshot(doc(db, 'settings', 'config'), (snapshot) => {
+                const defaultDepositInfo = "03269277193 (BIBI FATIMA)";
+                const defaultDepositWa = "923269277193";
+                const defaultSupportWa = "923269277193";
+
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    const depInfo = data.depositInfo || defaultDepositInfo;
+                    const depWa = data.depositWaNumber || defaultDepositWa;
+                    const supWa = data.supportWaNumber || defaultSupportWa;
+
+                    document.getElementById('depositNumberDisplay').innerText = depInfo;
+                    document.getElementById('depositWaBtn').href = `https://wa.me/${cleanPhone(depWa)}`;
+                    document.getElementById('supportWaBtn').href = `https://wa.me/${cleanPhone(supWa)}`;
+
+                    document.getElementById('adminDepositInfoInput').value = depInfo;
+                    document.getElementById('adminDepositWaInput').value = depWa;
+                    document.getElementById('adminSupportWaInput').value = supWa;
+                } else {
+                    document.getElementById('depositNumberDisplay').innerText = defaultDepositInfo;
+                    document.getElementById('depositWaBtn').href = `https://wa.me/${cleanPhone(defaultDepositWa)}`;
+                    document.getElementById('supportWaBtn').href = `https://wa.me/${cleanPhone(defaultSupportWa)}`;
+
+                    document.getElementById('adminDepositInfoInput').value = defaultDepositInfo;
+                    document.getElementById('adminDepositWaInput').value = defaultDepositWa;
+                    document.getElementById('adminSupportWaInput').value = defaultSupportWa;
+                }
+            });
+
+            // Admin Save Settings Event Listener
+            document.getElementById('saveSystemSettingsBtn').addEventListener('click', async (e) => {
+                const depInfo = document.getElementById('adminDepositInfoInput').value.trim();
+                const depWa = document.getElementById('adminDepositWaInput').value.trim();
+                const supWa = document.getElementById('adminSupportWaInput').value.trim();
+
+                if (!depInfo || !depWa || !supWa) {
+                    return alert("Please fill in all contact setting fields.");
+                }
+
+                e.target.disabled = true;
+                try {
+                    await setDoc(doc(db, 'settings', 'config'), {
+                        depositInfo: depInfo,
+                        depositWaNumber: cleanPhone(depWa),
+                        supportWaNumber: cleanPhone(supWa),
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                    alert("Contact Settings saved successfully!");
+                } catch (err) {
+                    alert("Failed to save settings: " + err.message);
+                } finally {
+                    e.target.disabled = false;
+                }
+            });
+
+            // Change Admin Password Event Listener
+            document.getElementById('changeAdminPassBtn').addEventListener('click', async (e) => {
+                const currentPass = document.getElementById('adminCurrentPass').value;
+                const newPass = document.getElementById('adminNewPass').value;
+                const confirmNewPass = document.getElementById('adminConfirmNewPass').value;
+
+                if (!currentPass || !newPass || !confirmNewPass) {
+                    return alert("Please fill in all password fields.");
+                }
+
+                if (newPass.length < 6) {
+                    return alert("New password must be at least 6 characters long.");
+                }
+
+                if (newPass !== confirmNewPass) {
+                    return alert("New passwords do not match!");
+                }
+
+                const user = auth.currentUser;
+                if (!user || !user.email) {
+                    return alert("No authenticated admin user session found.");
+                }
+
+                e.target.disabled = true;
+
+                try {
+                    // Re-authenticate user before changing sensitive auth data
+                    const credential = EmailAuthProvider.credential(user.email, currentPass);
+                    await reauthenticateWithCredential(user, credential);
+
+                    // Update password in Firebase Auth
+                    await updatePassword(user, newPass);
+
+                    alert("Admin password updated successfully!");
+                    document.getElementById('adminCurrentPass').value = '';
+                    document.getElementById('adminNewPass').value = '';
+                    document.getElementById('adminConfirmNewPass').value = '';
+                } catch (err) {
+                    alert("Failed to update password: " + err.message);
+                } finally {
+                    e.target.disabled = false;
+                }
+            });
+
+            onSnapshot(collection(db, 'entries'), (snapshot) => { siteEntries = []; snapshot.forEach(doc => siteEntries.push({ id: doc.id, ...doc.data() })); renderAllEntries(); });
+            
+            // Leaderboard Query
+            onSnapshot(query(collection(db, 'users'), orderBy('winningCoins', 'desc'), limit(20)), (snapshot) => {
+                const list = document.getElementById('rank-list-items'); list.innerHTML = '';
+                let index = 1;
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const name = data.ign || (data.email ? data.email.split('@')[0] : 'Player');
+                    const val = data.winningCoins || 0;
+                    
+                    if(index === 1) {
+                        document.getElementById('top1-name').innerText = name.toUpperCase();
+                        document.getElementById('top1-earnings').innerText = val + " PKR";
+                    } else {
+                        list.innerHTML += `<div class="rank-item"><div class="rank-pos">#${index}</div><div class="rank-name">${escapeHTML(name)}</div><div class="rank-earnings">${val} PKR</div></div>`;
+                    }
+                    index++;
+                });
+            });
+
+            // Admin Handlers
+            onSnapshot(query(collection(db, 'coinRequests'), where('status', '==', 'pending')), (snapshot) => {
+                const list = document.getElementById('admin-coin-requests-list'); list.innerHTML = snapshot.empty ? '<p style="color:#aaa; font-size:12px;">No requests.</p>' : '';
+                snapshot.forEach((docSnap) => {
+                    const req = {id: docSnap.id, ...docSnap.data()};
+                    list.innerHTML += `<div class="list-item-row"><div class="row-header-actions"><div><strong style="font-size:14px;">${escapeHTML(req.email)}</strong> - <strong style="color:var(--primary);">${escapeHTML(req.requestedCoins)} C</strong></div><div class="row-actions"><button class="btn-success approve-coin-btn" data-id="${req.id}" data-uid="${req.uid}" data-coins="${req.requestedCoins}">Approve</button><button class="btn-danger reject-coin-btn" data-id="${req.id}">Reject</button></div></div></div>`;
+                });
+                document.querySelectorAll('.approve-coin-btn').forEach(btn => btn.addEventListener('click', async(e)=>{ const el=e.target; el.disabled=true; try{await runTransaction(db, async(t)=>{ const uR=doc(db,'users',el.dataset.uid), rR=doc(db,'coinRequests',el.dataset.id), tR=doc(collection(db,'walletTransactions')); const uD=await t.get(uR); t.update(uR,{coins:(uD.data().coins||0)+parseInt(el.dataset.coins)}); t.update(rR,{status:'approved'}); t.set(tR,{uid:el.dataset.uid, type:'addition', amount:parseInt(el.dataset.coins), reason:'Deposit Approved', createdAt:serverTimestamp()}); });} catch(err){} }));
+                document.querySelectorAll('.reject-coin-btn').forEach(btn => btn.addEventListener('click', async(e)=>{ e.target.disabled=true; await updateDoc(doc(db,'coinRequests',e.target.dataset.id),{status:'rejected'}); }));
+            });
+
+            onSnapshot(query(collection(db, 'withdrawRequests'), where('status', '==', 'pending')), (snapshot) => {
+                const list = document.getElementById('admin-withdraw-requests-list'); list.innerHTML = snapshot.empty ? '<p style="color:#aaa; font-size:12px;">No requests.</p>' : '';
+                snapshot.forEach((docSnap) => {
+                    const req = {id: docSnap.id, ...docSnap.data()};
+                    list.innerHTML += `<div class="list-item-row"><div class="row-header-actions"><div><strong style="font-size:14px;">${escapeHTML(req.amount)} PKR</strong> (${escapeHTML(req.method)})<br><span style="color:#aaa; font-size:12px;">${escapeHTML(req.number)}</span></div><div class="row-actions"><button class="btn-success done-withdraw-btn" data-id="${req.id}">Done</button></div></div></div>`;
+                });
+                document.querySelectorAll('.done-withdraw-btn').forEach(btn => btn.addEventListener('click', async(e)=>{ e.target.disabled=true; await updateDoc(doc(db,'withdrawRequests',e.target.dataset.id),{status:'completed'}); }));
+            });
+
+            // Send Coins to Player via Gmail System
+            document.getElementById('adminSendCoinsBtn').addEventListener('click', async (e) => {
+                const targetEmail = document.getElementById('adminSendCoinEmail').value.trim();
+                const amount = parseInt(document.getElementById('adminSendCoinAmount').value);
+                const reason = document.getElementById('adminSendCoinReason').value.trim() || 'Tournament Reward / Winner';
+
+                if(!targetEmail || isNaN(amount) || amount <= 0) {
+                    return alert("Please provide a valid player Gmail and coin amount.");
+                }
+
+                e.target.disabled = true;
+                try {
+                    const usersQuery = query(collection(db, 'users'), where('email', '==', targetEmail));
+                    const userSnap = await getDocs(usersQuery);
+
+                    if(userSnap.empty) {
+                        alert("No user found with this Gmail address.");
+                        e.target.disabled = false;
+                        return;
+                    }
+
+                    const userDocSnap = userSnap.docs[0];
+                    const targetUid = userDocSnap.id;
+
+                    await runTransaction(db, async (t) => {
+                        const userRef = doc(db, 'users', targetUid);
+                        const userDat = await t.get(userRef);
+                        const currentBal = userDat.data().coins || 0;
+                        const currentWins = userDat.data().winningCoins || 0;
+
+                        t.update(userRef, { 
+                            coins: currentBal + amount,
+                            winningCoins: currentWins + amount 
+                        });
+                        t.set(doc(collection(db, 'walletTransactions')), {
+                            uid: targetUid,
+                            type: 'addition',
+                            amount: amount,
+                            reason: reason,
+                            createdAt: serverTimestamp()
+                        });
+                    });
+
+                    alert(`Successfully sent ${amount} coins to ${targetEmail}!`);
+                    document.getElementById('adminSendCoinEmail').value = '';
+                    document.getElementById('adminSendCoinAmount').value = '';
+                    document.getElementById('adminSendCoinReason').value = '';
+                } catch(err) {
+                    alert("Failed to send coins: " + err.message);
+                } finally {
+                    e.target.disabled = false;
+                }
+            });
+
+            function renderAllEntries() {
+                const matchesList = document.getElementById('all-matches-list');
+                const adminList = document.getElementById('admin-manage-list');
+                matchesList.innerHTML = ''; adminList.innerHTML = '';
+
+                siteEntries.forEach(entry => {
+                    const entryCat = entry.category || 'ALL';
+                    if(currentMatchFilter !== 'ALL' && entryCat !== currentMatchFilter) return;
+
+                    const bgClass = 'bg-' + escapeHTML(entry.status || '').toLowerCase().replace(/\s+/g, '');
+                    const hasJoined = userRegistrations.includes(entry.id);
+                    let maxSlots = 12;
+                    if (entry.format === 'Solo') maxSlots = 48;
+                    else if (entry.format?.startsWith('CS') || entry.format?.startsWith('Lone Wolf')) maxSlots = 2;
+                    else if (entry.format?.startsWith('Craftland')) maxSlots = 6;
+                    
+                    const currentJoined = entry.joinedCount || 0, isFull = currentJoined >= maxSlots;
+                    
+                    const newCard = document.createElement('div'); newCard.classList.add('gaming-card');
+                    let timeHtml = entry.idpTime ? `<div style="color:#25D366; font-size:12px; font-weight:bold; margin-bottom:8px;">🕒 IDP: ${escapeHTML(entry.idpTime)}</div>` : '';
+                    let formatSlots = `<div style="font-size:12px; color:#aaa; margin-bottom:8px;">${escapeHTML(entry.format||'Team')} | Slots: <span style="color:${isFull?'#e74c3c':'#27ae60'}">${currentJoined}/${maxSlots}</span></div>`;
+                    let feeText = `<div class="fee-badge">Fee: ${(!entry.fee||entry.fee==0)?'FREE':entry.fee+' C'}</div>`;
+                    let btnText = hasJoined ? 'GET IDP' : (isFull ? 'FULL' : 'JOIN');
+                    let dis = (isFull && !hasJoined) ? 'disabled style="background:#444; color:#888;"' : '';
+                    let actionBtnHtml = `<button class="action-card-btn ${hasJoined?'btn-get-idp':''}" data-id="${entry.id}" ${dis}>${btnText}</button>`;
+
+                    newCard.innerHTML = `<span class="badge ${bgClass}">${escapeHTML(entry.status)}</span><h3>${escapeHTML(entry.title)}</h3>${formatSlots}${timeHtml}${feeText}<p>${escapeHTML(entry.details)}</p>${actionBtnHtml}`;
+
+                    const actionBtnElement = newCard.querySelector('button.action-card-btn');
+                    if(actionBtnElement) {
+                        actionBtnElement.addEventListener('click', () => {
+                            if(!auth.currentUser) return alert("Login required!");
+                            if(hasJoined){ 
+                                if(entry.roomId){ document.getElementById('displayRoomId').innerText=entry.roomId; document.getElementById('displayRoomPass').innerText=entry.roomPass; showModal('idpModal'); }
+                                else alert(`IDP will be given at: ${entry.idpTime||'shortly'}`);
+                            } else {
+                                if(entry.status!=='Upcoming'&&entry.status!=='Available') return alert("Registration closed.");
+                                if(isFull) return alert("Match is Full!");
+                                selectedEventForReg = entry; 
+                                document.getElementById('regModalTitle').innerText=`JOIN MATCH`;
+                                document.getElementById('regModalDetails').innerHTML=`Fee: <strong style="color:var(--primary);">${(!entry.fee||entry.fee==0)?'Free':entry.fee+' C'}</strong>`;
+                                
+                                const isSoloFormat = ['Solo', 'CS 1v1', 'Craftland M590 Solo', 'Lone Wolf 1v1'].includes(entry.format);
+                                document.getElementById('teamSelectContainer').style.display = !isSoloFormat ? 'block' : 'none';
+                                document.getElementById('soloIgnContainer').style.display = isSoloFormat ? 'block' : 'none';
+                                
+                                if(!isSoloFormat){ const sel = document.getElementById('regTeamSelect'); sel.innerHTML=''; userTeams.forEach(t=>sel.innerHTML+=`<option value="${t.id}">${escapeHTML(t.teamName)}</option>`); }
+                                
+                                // Slot Logic UI Generation
+                                let takenSlots = entry.takenSlots || [];
+                                const slotGrid = document.getElementById('slotGrid');
+                                slotGrid.innerHTML = '';
+                                document.getElementById('selectedSlotValue').value = '';
+
+                                for(let i=1; i<=maxSlots; i++) {
+                                    let btn = document.createElement('div');
+                                    btn.innerText = i;
+                                    btn.style.padding = '8px 2px';
+                                    btn.style.textAlign = 'center';
+                                    btn.style.borderRadius = '4px';
+                                    btn.style.fontSize = '12px';
+                                    btn.style.fontWeight = 'bold';
+                                    btn.style.cursor = 'pointer';
+                                    btn.style.transition = '0.2s';
+                                    
+                                    if(takenSlots.includes(i)) {
+                                        btn.style.background = '#c0392b';
+                                        btn.style.color = '#fff';
+                                        btn.style.border = '1px solid #c0392b';
+                                        btn.style.cursor = 'not-allowed';
+                                    } else {
+                                        btn.style.background = '#27ae60';
+                                        btn.style.color = '#fff';
+                                        btn.style.border = '1px solid #27ae60';
+                                        btn.classList.add('slot-btn');
+                                        
+                                        btn.addEventListener('click', function() {
+                                            document.querySelectorAll('.slot-btn').forEach(b => {
+                                                if(!takenSlots.includes(parseInt(b.innerText))) {
+                                                    b.style.background = '#27ae60';
+                                                    b.style.border = '1px solid #27ae60';
+                                                    b.style.color = '#fff';
+                                                }
+                                            });
+                                            btn.style.background = 'var(--bg-dark)';
+                                            btn.style.border = '2px solid gold';
+                                            btn.style.color = 'gold';
+                                            document.getElementById('selectedSlotValue').value = i;
+                                        });
+                                    }
+                                    slotGrid.appendChild(btn);
+                                }
+                                document.getElementById('slotSelectionContainer').style.display = 'block';
+                                showModal('regModal');
+                            }
+                        });
+                    }
+                    matchesList.appendChild(newCard);
+
+                    // Admin Rows Setup
+                    const aRow = document.createElement('div'); aRow.classList.add('list-item-row');
+                    aRow.innerHTML = `<div class="row-header-actions"><div><strong style="color:var(--primary);font-size:14px;">${escapeHTML(entry.title)}</strong></div><div class="row-actions"><select class="status-select" data-id="${entry.id}"><option value="Upcoming" ${entry.status==='Upcoming'?'selected':''}>Upcoming</option><option value="Completed" ${entry.status==='Completed'?'selected':''}>Completed</option><option value="On Going" ${entry.status==='On Going'?'selected':''}>On Going</option><option value="Ended" ${entry.status==='Ended'?'selected':''}>Ended</option></select><button class="btn-danger delete-db-btn" data-id="${entry.id}">Del</button></div></div><div style="display:flex; gap:5px; margin-top:5px;"><input type="text" class="room-id-input" placeholder="Room ID" value="${escapeHTML(entry.roomId||'')}"><input type="text" class="room-pass-input" placeholder="Pass" value="${escapeHTML(entry.roomPass||'')}"><button class="btn-success update-idp-btn" data-id="${entry.id}">Set IDP</button><button class="btn-primary view-participants-btn" data-id="${entry.id}">Players</button></div>`;
+                    
+                    aRow.querySelector('.status-select').addEventListener('change', async(e) => await updateDoc(doc(db,'entries',e.target.dataset.id),{status:e.target.value}));
+                    aRow.querySelector('.delete-db-btn').addEventListener('click', async(e) => { if(confirm('Delete?')) await deleteDoc(doc(db,'entries',e.target.dataset.id)); });
+                    
+                    aRow.querySelector('.view-participants-btn')?.addEventListener('click', async(e)=>{
+                        document.getElementById('adminPartTitle').innerText=`Players`; showModal('adminParticipantsModal'); const list=document.getElementById('adminPartList'); list.innerHTML='Loading...';
+                        try{ const snap=await getDocs(query(collection(db,'registrations'),where('eventId','==',e.target.dataset.id))); list.innerHTML=''; if(snap.empty){ list.innerHTML='No players.'; return; }
+                            let h='<table border="1" bordercolor="#444"><tr><th style="color:var(--primary)">Slot</th><th style="color:var(--primary)">Name/IGN</th><th style="color:var(--primary)">Email</th></tr>';
+                            let rows = [];
+                            snap.forEach(d=>{ 
+                                const dt=d.data(); 
+                                const isSoloFmt = ['Solo', 'CS 1v1', 'Craftland M590 Solo', 'Lone Wolf 1v1'].includes(dt.format); 
+                                rows.push({slot: dt.slot || 'N/A', name: isSoloFmt ? dt.soloIgn : dt.teamName, email: dt.userName||dt.email||dt.uid});
+                            });
+                            rows.sort((a,b)=>a.slot - b.slot);
+                            rows.forEach(r => { h+=`<tr><td style="color:gold; font-weight:bold;">${r.slot}</td><td style="color:#fff">${escapeHTML(r.name)}</td><td style="color:#25D366; font-size:12px; font-weight:bold;">${escapeHTML(r.email)}</td></tr>`; });
+                            list.innerHTML=h+'</table>';
+                        }catch(err){ list.innerHTML='Error fetching players.'; }
+                    });
+                    
+                    aRow.querySelector('.update-idp-btn')?.addEventListener('click', async(e)=>{ e.target.disabled=true; await updateDoc(doc(db,'entries',e.target.dataset.id),{roomId:aRow.querySelector('.room-id-input').value, roomPass:aRow.querySelector('.room-pass-input').value}); e.target.disabled=false; alert("IDP Updated!"); });
+
+                    adminList.appendChild(aRow);
+                });
+            }
+
+            // Tournament Registration with Slot Booking
+            document.getElementById('confirmRegBtn').addEventListener('click', async(e) => {
+                if(!selectedEventForReg) return; 
+                const fee=parseInt(selectedEventForReg.fee)||0; 
+                let tId=null, tNm="", sIgn=null;
+                const isSoloReg = ['Solo', 'CS 1v1', 'Craftland M590 Solo', 'Lone Wolf 1v1'].includes(selectedEventForReg.format);
+                
+                let selectedSlot = parseInt(document.getElementById('selectedSlotValue').value);
+                if(!selectedSlot) return alert("Please select an available slot.");
+                
+                if(!isSoloReg){ const sel=document.getElementById('regTeamSelect'); tId=sel.value; if(!tId)return alert("Select a team."); tNm=sel.options[sel.selectedIndex].text; }
+                else { sIgn=document.getElementById('regSoloIgn').value.trim(); if(!sIgn)return alert("Enter IGN."); }
+                
+                if(currentCoins < fee) return alert(`Need ${fee} C. Have ${currentCoins}.`);
+                e.target.disabled=true;
+                
+                try{ await runTransaction(db, async(t)=>{
+                    const eR=doc(db,'entries',selectedEventForReg.id), eD=await t.get(eR);
+                    const curJ = eD.data().joinedCount||0;
+                    let tSlots = eD.data().takenSlots || [];
+                    
+                    let max = 12;
+                    if(selectedEventForReg.format === 'Solo') max = 48;
+                    else if(selectedEventForReg.format?.startsWith('CS') || selectedEventForReg.format?.startsWith('Lone Wolf')) max = 2;
+                    else if(selectedEventForReg.format?.startsWith('Craftland')) max = 6;
+                    
+                    if(curJ>=max) throw "Match is Full!";
+                    if(tSlots.includes(selectedSlot)) throw "Slot already taken! Choose another.";
+                    
+                    const uR=doc(db,'users',auth.currentUser.uid), uD=await t.get(uR); 
+                    if((uD.data().coins||0)<fee)throw "Insufficient funds";
+                    
+                    tSlots.push(selectedSlot);
+                    
+                    t.update(eR,{joinedCount:curJ+1, takenSlots: tSlots}); 
+                    t.update(uR,{coins:(uD.data().coins||0)-fee});
+                    t.set(doc(collection(db,'registrations')),{eventId:selectedEventForReg.id, uid:auth.currentUser.uid, userName:auth.currentUser.email, teamId:tId, teamName:tNm, soloIgn:sIgn, format:selectedEventForReg.format||'Team', slot: selectedSlot, feePaid:fee, createdAt:serverTimestamp()});
+                    if(fee>0) t.set(doc(collection(db,'walletTransactions')),{uid:auth.currentUser.uid, type:'deduction', amount:fee, reason:`Fee for ${selectedEventForReg.title} (Slot ${selectedSlot})`, createdAt:serverTimestamp()});
+                }); alert("Registration Successful!"); hideModal('regModal'); } catch(err){ alert("Failed: "+err); } finally { e.target.disabled=false; }
+            });
+
+            // Auth Logic With Admin Selection
+            let isSignUp = false;
+            document.getElementById('authToggleMsg').addEventListener('click', () => {
+                isSignUp = !isSignUp;
+                document.getElementById('authTitle').innerText = isSignUp ? "REGISTER" : "LOGIN";
+                document.getElementById('signup-fields').classList.toggle('hidden', !isSignUp);
+                document.getElementById('authConfirmPassword').classList.toggle('hidden', !isSignUp);
+                document.getElementById('emailSignInBtn').classList.toggle('hidden', isSignUp);
+                document.getElementById('emailSignUpBtn').classList.toggle('hidden', !isSignUp);
+                document.getElementById('authToggleMsg').innerText = isSignUp ? "Already have an account? Login" : "Need an account? Register";
+            });
+            
+            document.getElementById('authAdminToggle').addEventListener('change', (e) => {
+                document.getElementById('authAdminPass').classList.toggle('hidden', e.target.value === 'NO');
+            });
+
+            document.getElementById('emailSignInBtn').addEventListener('click', async(e)=>{ e.target.disabled=true; try{await signInWithEmailAndPassword(auth,document.getElementById('authEmail').value,document.getElementById('authPassword').value);}catch(err){alert(err.message);} finally{e.target.disabled=false;} });
+            
+            document.getElementById('emailSignUpBtn').addEventListener('click', async(e)=>{ 
+                e.target.disabled=true; 
+                const em = document.getElementById('authEmail').value;
+                const pw = document.getElementById('authPassword').value;
+                const cpw = document.getElementById('authConfirmPassword').value;
+                const ign = document.getElementById('authIGN').value;
+                const gUid = document.getElementById('authGameUid').value;
+                const admnReq = document.getElementById('authAdminToggle').value;
+                const admnPass = document.getElementById('authAdminPass').value;
+                let isAdminAccess = false;
+
+                if(pw !== cpw) { alert("Passwords do not match!"); e.target.disabled=false; return; }
+                if(!ign || !gUid) { alert("Please provide IGN and Game UID."); e.target.disabled=false; return; }
+                
+                if (admnReq === 'YES') {
+                    if (admnPass !== 'merit098') {
+                        alert("Invalid Admin Key Provided!");
+                        e.target.disabled = false;
+                        return;
+                    }
+                    isAdminAccess = true;
+                }
+
+                try{
+                    const res = await createUserWithEmailAndPassword(auth, em, pw); 
+                    await updateProfile(res.user, {displayName: ign});
+                    await setDoc(doc(db, 'users', res.user.uid), { email: em, ign: ign, gameUid: gUid, coins: 0, winningCoins: 0, isAdmin: isAdminAccess, createdAt: serverTimestamp() });
+                } catch(err){ alert(err.message); } finally{ e.target.disabled=false; } 
+            });
+
+            let uSub, tSub, trSub, rSub;
+            async function initUser(user) {
+                const uRef=doc(db,'users',user.uid); const uDoc=await getDoc(uRef); 
+                if(!uDoc.exists()) await setDoc(uRef,{email:user.email, coins:0, winningCoins:0, ign: user.displayName || 'Player', gameUid: 'N/A', isAdmin: false, createdAt:serverTimestamp()});
+                
+                uSub = onSnapshot(uRef, d => { 
+                    if(d.exists()){ 
+                        const data = d.data();
+                        currentCoins = data.coins || 0; 
+                        document.getElementById('headerCoinDisplay').style.display='flex'; 
+                        document.getElementById('walletBalanceTop').innerText=currentCoins; 
+                        document.getElementById('mainWalletBalance').innerText=currentCoins; 
+                        
+                        document.getElementById('profileName').innerText = data.ign || user.displayName || 'Player';
+                        document.getElementById('profileGameUid').innerText = data.gameUid || 'N/A';
+                        
+                        // Show admin panel conditionally
+                        if(data.isAdmin) { document.getElementById('openAdminBtn').classList.remove('hidden'); } 
+                        else { document.getElementById('openAdminBtn').classList.add('hidden'); }
+                    } 
+                });
+                
+                tSub = onSnapshot(query(collection(db,'teams'),where('ownerUid','==',user.uid)), s=>{ userTeams=[]; const l=document.getElementById('my-teams-list'); l.innerHTML=''; s.forEach(d=>{const tm={id:d.id,...d.data()}; userTeams.push(tm); l.innerHTML+=`<div class="gaming-card"><h3 style="color:var(--primary); font-size:16px;">${escapeHTML(tm.teamName)}</h3><p style="font-size:12px;">P1: ${escapeHTML(tm.players[0])}<br>P2: ${escapeHTML(tm.players[1])}<br>P3: ${escapeHTML(tm.players[2])}<br>P4: ${escapeHTML(tm.players[3])}</p></div>`;});});
+                rSub = onSnapshot(query(collection(db,'registrations'),where('uid','==',user.uid)), s=>{ userRegistrations=[]; s.forEach(d=>userRegistrations.push(d.data().eventId)); renderAllEntries(); });
+                trSub = onSnapshot(query(collection(db,'walletTransactions'),where('uid','==',user.uid)), s=>{ const l=document.getElementById('transactionList'); l.innerHTML=''; let arr=[]; s.forEach(d=>arr.push(d.data())); arr.sort((a,b)=>(b.createdAt?.toMillis()||0)-(a.createdAt?.toMillis()||0)); arr.forEach(t=>{ const c=t.type==='addition'?'#27ae60':'#e74c3c', sn=t.type==='addition'?'+':'-'; l.innerHTML+=`<div style="background:rgba(0,0,0,0.85); padding:8px; border-left:3px solid ${c}; margin-bottom:5px;"><strong style="color:${c}">${sn}${t.amount} C</strong> <span style="color:#aaa;font-size:11px;">${escapeHTML(t.reason)}</span></div>`;});});
+            }
+
+            window.updateUserUI = function(user) {
+                if(user) {
+                    document.body.classList.add('logged-in'); 
+                    document.getElementById('profileEmailCard').innerText=user.email; 
+                    initUser(user);
+                    document.querySelectorAll('.page-section').forEach(s=>{s.style.display='none';s.classList.remove('active');});
+                    
+                    document.getElementById('login-animation').style.display='flex'; 
+                    setTimeout(()=>{
+                        document.getElementById('login-animation').style.display='none'; 
+                        document.getElementById('matches').style.display='block'; 
+                        setTimeout(()=>document.getElementById('matches').classList.add('active'),10);
+                        document.querySelector('[data-target="matches"]').classList.add('active');
+                    }, 1000);
+                } else {
+                    document.body.classList.remove('logged-in'); 
+                    document.getElementById('headerCoinDisplay').style.display='none';
+                    if(uSub)uSub(); if(tSub)tSub(); if(trSub)trSub(); if(rSub)rSub(); currentCoins=0; userTeams=[]; userRegistrations=[];
+                    
+                    document.querySelectorAll('.page-section').forEach(s=>{s.style.display='none';s.classList.remove('active');}); 
+                    const aS=document.getElementById('user-auth'); aS.style.display='flex'; setTimeout(()=>aS.classList.add('active'),10);
+                }
+            }
+
+            onAuthStateChanged(auth, user => updateUserUI(user));
+            document.getElementById('userLogoutBtn').addEventListener('click', ()=>signOut(auth));
+
+            document.getElementById('createTeamBtn').addEventListener('click', async(e)=>{
+                const b=e.target, n=document.getElementById('teamNameInput').value, p1=document.getElementById('p1Input').value, p2=document.getElementById('p2Input').value, p3=document.getElementById('p3Input').value, p4=document.getElementById('p4Input').value;
+                if(!n||!p1||!p2||!p3||!p4)return alert("Fill all!"); b.disabled=true; try{ await addDoc(collection(db,'teams'),{teamName:n,ownerUid:auth.currentUser.uid,players:[p1,p2,p3,p4],createdAt:serverTimestamp()}); alert("Created!"); ['teamNameInput','p1Input','p2Input','p3Input','p4Input'].forEach(id=>document.getElementById(id).value=''); }catch(err){alert("Error.");}finally{b.disabled=false;}
+            });
+            document.getElementById('requestCoinsBtn').addEventListener('click', async(e)=>{ const a=parseInt(document.getElementById('coinAmountReq').value); if(isNaN(a)||a<=0)return alert("Valid amount!"); e.target.disabled=true; await addDoc(collection(db,'coinRequests'),{uid:auth.currentUser.uid,email:auth.currentUser.email,requestedCoins:a,status:'pending',createdAt:serverTimestamp()}); alert("Requested! Send SS to WA."); document.getElementById('coinAmountReq').value=''; e.target.disabled=false; });
+            document.getElementById('requestWithdrawBtn').addEventListener('click', async(e)=>{ const a=parseInt(document.getElementById('withdrawAmount').value), m=document.getElementById('withdrawMethod').value, n=document.getElementById('withdrawNumber').value; if(isNaN(a)||a<10||!m||!n)return alert("Invalid details. Min 10 C."); if(currentCoins<a)return alert("Not enough coins."); e.target.disabled=true; try{await runTransaction(db,async(t)=>{const uR=doc(db,'users',auth.currentUser.uid); const uD=await t.get(uR); if((uD.data().coins||0)<a)throw "Error"; t.update(uR,{coins:uD.data().coins-a}); t.set(doc(collection(db,'withdrawRequests')),{uid:auth.currentUser.uid,email:auth.currentUser.email,amount:a,method:m,number:n,status:'pending',createdAt:serverTimestamp()}); t.set(doc(collection(db,'walletTransactions')),{uid:auth.currentUser.uid,type:'deduction',amount:a,reason:`Withdraw (${m})`,createdAt:serverTimestamp()});}); alert("Submitted!");}catch(err){alert("Fail.");}finally{e.target.disabled=false;}});
+
+            // Admin Panel Match Publishing
+            document.getElementById('publishMatchBtn').addEventListener('click',async(e)=>{
+                const ty=e.target.dataset.type, t=document.getElementById(ty+'Title').value, d=document.getElementById(ty+'Details').value, s=document.getElementById(ty+'Status').value; 
+                const f=document.getElementById(ty+'Format').value, fe=parseInt(document.getElementById(ty+'Fee').value)||0, idp=document.getElementById(ty+'IdpTime').value, cat=document.getElementById(ty+'Category').value;
+                if(!t||!d)return alert("Fill title/details."); 
+                e.target.disabled=true; 
+                await addDoc(collection(db,'entries'),{type:ty,title:t,details:d,status:s,format:f,fee:fe,idpTime:idp,category:cat,roomId:"",roomPass:"",joinedCount:0, takenSlots:[]}); 
+                alert("Published."); e.target.disabled=false; document.getElementById(ty+'Title').value=''; document.getElementById(ty+'Details').value='';
+            });
+
+            // Particles Background
+            const cvs = document.getElementById('live-bg'), cx = cvs.getContext('2d'); let w,h,pts=[];
+            function initC(){ w=cvs.width=window.innerWidth; h=cvs.height=window.innerHeight; pts=[]; for(let i=0;i<60;i++)pts.push({x:Math.random()*w,y:Math.random()*h,s:Math.random()*2.5+1,vx:Math.random()*1-0.5,vy:Math.random()*-1.2-0.2}); }
+            function animC(){ cx.clearRect(0,0,w,h); pts.forEach(p=>{cx.beginPath();cx.arc(p.x,p.y,p.s,0,Math.PI*2);cx.fillStyle='rgba(0,123,255,0.45)';cx.fill();p.x+=p.vx;p.y+=p.vy;if(p.y<0){p.y=h;p.x=Math.random()*w;}if(p.x<0||p.x>w)p.vx*=-1;}); requestAnimationFrame(animC); }
+            initC(); animC(); window.addEventListener('resize', initC);
+        });
+    </script>
 </body>
 </html>
