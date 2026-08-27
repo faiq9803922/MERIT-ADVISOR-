@@ -118,7 +118,7 @@
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(10, 8, 14, 0.98); backdrop-filter: blur(18px);
             border-top: 2px solid var(--primary);
-            display: flex; justify-content: space-around; align-items: center;
+            display: flex; justify-space-around; align-items: center;
             height: 68px; z-index: 1000; box-shadow: 0 -4px 25px rgba(0, 123, 255, 0.25);
         }
         .nav-item {
@@ -396,6 +396,14 @@
                 <p style="font-size: var(--font-sm); color: #ccc;"><strong>Email:</strong> <span id="profileEmailCard">-</span></p>
             </div>
 
+            <!-- Rules Section -->
+            <div class="custom-form-box">
+                <h3 style="font-family: 'Bebas Neue', sans-serif; color: var(--primary);"><i class="fa-solid fa-scroll"></i> MATCH RULES</h3>
+                <div id="displayMatchRules" style="white-space: pre-wrap; font-size: var(--font-sm); color: #ddd; line-height: 1.6; background: rgba(0,0,0,0.5); padding: 12px; border-radius: 6px; border: 1px solid #444;">
+                    Loading rules...
+                </div>
+            </div>
+
             <!-- Wallet -->
             <div class="custom-form-box" style="text-align:center;">
                 <h3 style="font-family: 'Bebas Neue', sans-serif; color:var(--primary);">MY WALLET</h3>
@@ -458,6 +466,14 @@
                     <input type="password" id="adminNewPass" placeholder="New Password (min 6 chars)">
                     <input type="password" id="adminConfirmNewPass" placeholder="Confirm New Password">
                     <button id="changeAdminPassBtn" style="background: #e74c3c;">UPDATE ADMIN PASSWORD</button>
+                </div>
+
+                <!-- Update Match Rules Option -->
+                <div class="custom-form-box" style="border: 2px solid var(--primary); margin-bottom: 20px;">
+                    <h3 style="color: var(--primary);"><i class="fa-solid fa-pen-to-square"></i> Edit Match Rules</h3>
+                    <p style="color:#aaa; font-size:var(--font-sm); margin-bottom:10px;">Update rules displayed in Profile section for all users.</p>
+                    <textarea id="adminRulesInput" rows="10" placeholder="Enter match rules here..."></textarea>
+                    <button id="saveRulesBtn" style="background: var(--primary);">SAVE MATCH RULES</button>
                 </div>
 
                 <!-- System Contact Settings -->
@@ -568,6 +584,21 @@
         function escapeHTML(str) { return str ? String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[m])) : ''; }
         function cleanPhone(num) { return num ? String(num).replace(/[^0-9]/g, '') : ''; }
 
+        const defaultRulesText = `M590 match rules : MATCHES RULES
+
+*1) AFTER WE SEND ID PASS YOU HAVE 8MIN TO JOIN*
+*2) ORION RYDEN DEMETRI SONIA NOT ALLOW*
+*3) PC PLAYER not ALLOW*
+*5) NO HACK NO PNL USE*
+*6) IF YOU BREAK ANY RULE YOU DISQUALIFIED*
+*7) NO TEAM UP*
+*8) MIC ON ALLOW BUT NO ONE GIVES LOCATION IF DO SO DISQUALIFIED*
+*9) SS MUST AFTER MATCH*
+*10) IF ANYONE ASK OTHER IS PANEL OR CHEAT OR TEAM UP THAN GIVE PROOF*
+*11) IF TWO OR MORE TEAMS HAVE SAME POINTS THEN CONSIDER SURVIVAL TIMe And kills+position ma pp divide same par*
+
+*LAST SLOT LEFT IDP GIVEN + LAST LEFT ANONE NEED COME INBOX 📥*`;
+
         let siteEntries = [], userTeams = [], userRegistrations = [], currentCoins = 0, selectedEventForReg = null;
         let currentMatchFilter = 'ALL';
 
@@ -625,6 +656,7 @@
                     const depInfo = data.depositInfo || defaultDepositInfo;
                     const depWa = data.depositWaNumber || defaultDepositWa;
                     const supWa = data.supportWaNumber || defaultSupportWa;
+                    const matchRules = data.rules || defaultRulesText;
 
                     document.getElementById('depositNumberDisplay').innerText = depInfo;
                     document.getElementById('depositWaBtn').href = `https://wa.me/${cleanPhone(depWa)}`;
@@ -633,6 +665,9 @@
                     document.getElementById('adminDepositInfoInput').value = depInfo;
                     document.getElementById('adminDepositWaInput').value = depWa;
                     document.getElementById('adminSupportWaInput').value = supWa;
+
+                    document.getElementById('displayMatchRules').innerText = matchRules;
+                    document.getElementById('adminRulesInput').value = matchRules;
                 } else {
                     document.getElementById('depositNumberDisplay').innerText = defaultDepositInfo;
                     document.getElementById('depositWaBtn').href = `https://wa.me/${cleanPhone(defaultDepositWa)}`;
@@ -641,6 +676,30 @@
                     document.getElementById('adminDepositInfoInput').value = defaultDepositInfo;
                     document.getElementById('adminDepositWaInput').value = defaultDepositWa;
                     document.getElementById('adminSupportWaInput').value = defaultSupportWa;
+
+                    document.getElementById('displayMatchRules').innerText = defaultRulesText;
+                    document.getElementById('adminRulesInput').value = defaultRulesText;
+                }
+            });
+
+            // Admin Save Match Rules Event Listener
+            document.getElementById('saveRulesBtn').addEventListener('click', async (e) => {
+                const newRules = document.getElementById('adminRulesInput').value.trim();
+                if (!newRules) {
+                    return alert("Match rules cannot be empty!");
+                }
+
+                e.target.disabled = true;
+                try {
+                    await setDoc(doc(db, 'settings', 'config'), {
+                        rules: newRules,
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                    alert("Match Rules saved successfully!");
+                } catch (err) {
+                    alert("Failed to save rules: " + err.message);
+                } finally {
+                    e.target.disabled = false;
                 }
             });
 
@@ -696,11 +755,8 @@
                 e.target.disabled = true;
 
                 try {
-                    // Re-authenticate user before changing sensitive auth data
                     const credential = EmailAuthProvider.credential(user.email, currentPass);
                     await reauthenticateWithCredential(user, credential);
-
-                    // Update password in Firebase Auth
                     await updatePassword(user, newPass);
 
                     alert("Admin password updated successfully!");
@@ -746,13 +802,62 @@
                 document.querySelectorAll('.reject-coin-btn').forEach(btn => btn.addEventListener('click', async(e)=>{ e.target.disabled=true; await updateDoc(doc(db,'coinRequests',e.target.dataset.id),{status:'rejected'}); }));
             });
 
+            // Admin Withdraw Requests - Coins Deducted Only When Admin Clicks Done
             onSnapshot(query(collection(db, 'withdrawRequests'), where('status', '==', 'pending')), (snapshot) => {
                 const list = document.getElementById('admin-withdraw-requests-list'); list.innerHTML = snapshot.empty ? '<p style="color:#aaa; font-size:12px;">No requests.</p>' : '';
                 snapshot.forEach((docSnap) => {
                     const req = {id: docSnap.id, ...docSnap.data()};
-                    list.innerHTML += `<div class="list-item-row"><div class="row-header-actions"><div><strong style="font-size:14px;">${escapeHTML(req.amount)} PKR</strong> (${escapeHTML(req.method)})<br><span style="color:#aaa; font-size:12px;">${escapeHTML(req.number)}</span></div><div class="row-actions"><button class="btn-success done-withdraw-btn" data-id="${req.id}">Done</button></div></div></div>`;
+                    list.innerHTML += `<div class="list-item-row"><div class="row-header-actions"><div><strong style="font-size:14px;">${escapeHTML(req.email)}</strong><br><strong style="color:#27ae60;">${escapeHTML(req.amount)} PKR</strong> (${escapeHTML(req.method)})<br><span style="color:#aaa; font-size:12px;">${escapeHTML(req.number)}</span></div><div class="row-actions"><button class="btn-success done-withdraw-btn" data-id="${req.id}" data-uid="${req.uid}" data-amount="${req.amount}" data-method="${req.method}">Done</button><button class="btn-danger reject-withdraw-btn" data-id="${req.id}">Reject</button></div></div></div>`;
                 });
-                document.querySelectorAll('.done-withdraw-btn').forEach(btn => btn.addEventListener('click', async(e)=>{ e.target.disabled=true; await updateDoc(doc(db,'withdrawRequests',e.target.dataset.id),{status:'completed'}); }));
+
+                document.querySelectorAll('.done-withdraw-btn').forEach(btn => btn.addEventListener('click', async(e)=>{ 
+                    const reqId = e.target.dataset.id;
+                    const userUid = e.target.dataset.uid;
+                    const reqAmount = parseInt(e.target.dataset.amount);
+                    const reqMethod = e.target.dataset.method;
+                    e.target.disabled = true;
+
+                    try {
+                        await runTransaction(db, async(t) => {
+                            const userRef = doc(db, 'users', userUid);
+                            const reqRef = doc(db, 'withdrawRequests', reqId);
+                            const transRef = doc(collection(db, 'walletTransactions'));
+
+                            const userSnap = await t.get(userRef);
+                            if (!userSnap.exists()) throw new Error("User does not exist");
+
+                            const userCoins = userSnap.data().coins || 0;
+                            if (userCoins < reqAmount) {
+                                throw new Error(`User balance (${userCoins} C) is lower than requested amount (${reqAmount} C).`);
+                            }
+
+                            t.update(userRef, { coins: userCoins - reqAmount });
+                            t.update(reqRef, { status: 'completed' });
+                            t.set(transRef, {
+                                uid: userUid,
+                                type: 'deduction',
+                                amount: reqAmount,
+                                reason: `Withdraw (${reqMethod}) Approved`,
+                                createdAt: serverTimestamp()
+                            });
+                        });
+                        alert("Withdrawal marked as done and coins deducted successfully!");
+                    } catch(err) {
+                        alert("Error completing withdrawal: " + err.message);
+                    } finally {
+                        e.target.disabled = false;
+                    }
+                }));
+
+                document.querySelectorAll('.reject-withdraw-btn').forEach(btn => btn.addEventListener('click', async(e)=>{ 
+                    e.target.disabled = true; 
+                    try {
+                        await updateDoc(doc(db, 'withdrawRequests', e.target.dataset.id), { status: 'rejected' });
+                        alert("Withdrawal request rejected.");
+                    } catch(err) {
+                        alert("Error rejecting request: " + err.message);
+                    }
+                }));
             });
 
             // Send Coins to Player via Gmail System
@@ -1084,8 +1189,41 @@
                 const b=e.target, n=document.getElementById('teamNameInput').value, p1=document.getElementById('p1Input').value, p2=document.getElementById('p2Input').value, p3=document.getElementById('p3Input').value, p4=document.getElementById('p4Input').value;
                 if(!n||!p1||!p2||!p3||!p4)return alert("Fill all!"); b.disabled=true; try{ await addDoc(collection(db,'teams'),{teamName:n,ownerUid:auth.currentUser.uid,players:[p1,p2,p3,p4],createdAt:serverTimestamp()}); alert("Created!"); ['teamNameInput','p1Input','p2Input','p3Input','p4Input'].forEach(id=>document.getElementById(id).value=''); }catch(err){alert("Error.");}finally{b.disabled=false;}
             });
+
             document.getElementById('requestCoinsBtn').addEventListener('click', async(e)=>{ const a=parseInt(document.getElementById('coinAmountReq').value); if(isNaN(a)||a<=0)return alert("Valid amount!"); e.target.disabled=true; await addDoc(collection(db,'coinRequests'),{uid:auth.currentUser.uid,email:auth.currentUser.email,requestedCoins:a,status:'pending',createdAt:serverTimestamp()}); alert("Requested! Send SS to WA."); document.getElementById('coinAmountReq').value=''; e.target.disabled=false; });
-            document.getElementById('requestWithdrawBtn').addEventListener('click', async(e)=>{ const a=parseInt(document.getElementById('withdrawAmount').value), m=document.getElementById('withdrawMethod').value, n=document.getElementById('withdrawNumber').value; if(isNaN(a)||a<10||!m||!n)return alert("Invalid details. Min 10 C."); if(currentCoins<a)return alert("Not enough coins."); e.target.disabled=true; try{await runTransaction(db,async(t)=>{const uR=doc(db,'users',auth.currentUser.uid); const uD=await t.get(uR); if((uD.data().coins||0)<a)throw "Error"; t.update(uR,{coins:uD.data().coins-a}); t.set(doc(collection(db,'withdrawRequests')),{uid:auth.currentUser.uid,email:auth.currentUser.email,amount:a,method:m,number:n,status:'pending',createdAt:serverTimestamp()}); t.set(doc(collection(db,'walletTransactions')),{uid:auth.currentUser.uid,type:'deduction',amount:a,reason:`Withdraw (${m})`,createdAt:serverTimestamp()});}); alert("Submitted!");}catch(err){alert("Fail.");}finally{e.target.disabled=false;}});
+
+            // Updated Request Withdraw (Method check & no immediate coin deduction)
+            document.getElementById('requestWithdrawBtn').addEventListener('click', async(e)=>{ 
+                const a = parseInt(document.getElementById('withdrawAmount').value);
+                const m = document.getElementById('withdrawMethod').value;
+                const n = document.getElementById('withdrawNumber').value.trim();
+
+                if (!m) return alert("SELECT WITHDRAW METHOD");
+                if (isNaN(a) || a < 10) return alert("Min Withdraw: 10 Coins.");
+                if (!n) return alert("Please enter account number.");
+                if (currentCoins < a) return alert("Not enough coins.");
+
+                e.target.disabled = true; 
+                try {
+                    await addDoc(collection(db, 'withdrawRequests'), {
+                        uid: auth.currentUser.uid,
+                        email: auth.currentUser.email,
+                        amount: a,
+                        method: m,
+                        number: n,
+                        status: 'pending',
+                        createdAt: serverTimestamp()
+                    }); 
+                    alert("Withdrawal request submitted successfully! Coins will be deducted upon admin processing.");
+                    document.getElementById('withdrawAmount').value = '';
+                    document.getElementById('withdrawNumber').value = '';
+                    document.getElementById('withdrawMethod').value = '';
+                } catch(err) {
+                    alert("Failed to submit request: " + err.message);
+                } finally {
+                    e.target.disabled = false;
+                }
+            });
 
             // Admin Panel Match Publishing
             document.getElementById('publishMatchBtn').addEventListener('click',async(e)=>{
